@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pulizie di Casa</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon-180.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#007AFF">
+  <style>
+    :root {
+      --brand:#007AFF;            /* personalizzabile da Impostazioni */
+      --accent-me:#2563eb;
+      --accent-partner:#e11d48;
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --text:#0f1222;
+      --muted:#616b7f;
+      --ok:#2ecc71;
+      --warn:#ffb020;
+      --danger:#ff5e57;
+      --border:#e6e8f0;
+      --shadow: 0 8px 24px rgba(0,0,0,.08);
+      --radius:14px;
+      --fs-1:18px; /* title */
+      --fs-2:16px; /* body */
+      --fs-3:14px; /* meta */
+    }
+    @media (prefers-color-scheme: dark){
+      :root {
+        --bg:#0f1115; --card:#151923; --text:#eef1f6; --muted:#9aa3b2; --border:#232838;
+        --shadow: 0 8px 24px rgba(0,0,0,.35);
+      }
+    }
+    .dark {
+      --bg:#0f1115; --card:#151923; --text:#eef1f6; --muted:#9aa3b2; --border:#232838;
+      --shadow: 0 8px 24px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,'Helvetica Neue',Arial}
+    body{background:var(--bg);color:var(--text); line-height:1.45}
+    header{
+      position:sticky;top:0;z-index:5;background:var(--card);box-shadow:var(--shadow);
+      padding:12px 16px;display:flex;align-items:center;gap:12px
+    }
+    header h1{font-size:var(--fs-1);margin:0;flex:1}
+    header .pill{
+      font-size:12px;padding:6px 10px;border-radius:999px;background:#eef5ff;color:var(--brand);
+      display:flex;align-items:center;gap:8px;border:1px solid var(--border)
+    }
+    .avatar{ width:18px;height:18px;border-radius:50%; display:inline-block;border:2px solid rgba(255,255,255,.5); }
+    .container{max-width:780px;margin:0 auto;padding:16px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+    form#newTask{padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    form#newTask input, form#newTask select, form#newTask button, textarea {
+      width:100%;padding:12px;border:1px solid var(--border);border-radius:12px;background:transparent;font-size:var(--fs-2);color:var(--text)
+    }
+    form#newTask textarea{grid-column:1/-1;min-height:60px;resize:vertical}
+    .grid-span-2{grid-column:1/-1}
+    .row{display:flex;gap:10px;align-items:center}
+    .row>*{flex:1}
+    .inline{display:flex;gap:8px;align-items:center}
+    .help{font-size:12px;color:var(--muted)}
+    .switch{display:inline-flex;align-items:center;gap:8px;font-size:var(--fs-3)}
+    .switch input{transform:scale(1.2)}
+    .badge{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid var(--border);background:#f1f4fb}
+    .btn{padding:12px;border:1px solid var(--border);border-radius:12px;background:#fff0;color:var(--text)}
+    .btn.primary{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
+    nav.tabs{display:flex;margin-top:14px;border-bottom:2px solid var(--border)}
+    nav.tabs button{
+      flex:1;padding:12px;border:0;background:transparent;font-weight:700;color:var(--muted);
+      border-bottom:3px solid transparent;font-size:var(--fs-2)
+    }
+    nav.tabs button.active{color:var(--brand);border-bottom-color:var(--brand)}
+    ul#list{list-style:none;padding:0;margin:0}
+    li.task{display:flex;gap:12px;padding:16px;border-bottom:1px solid var(--border);align-items:flex-start}
+    li.task:last-child{border-bottom:0}
+    .chk{display:flex;align-items:center}
+    .chk input{width:22px;height:22px}
+    .task-main{flex:1}
+    .title{font-weight:800;font-size:var(--fs-2)}
+    .meta{color:var(--muted);font-size:var(--fs-3);margin-top:6px;display:flex;flex-wrap:wrap;gap:8px}
+    .badges span{font-size:11px;background:#f1f3f9;border:1px solid var(--border);padding:4px 8px;border-radius:999px}
+    .assignee-me{background: rgba(37,99,235,.12) !important; color:#cbdafe !important; border-color: rgba(37,99,235,.35)!important}
+    .assignee-partner{background: rgba(225,29,72,.12) !important; color:#fecdd3 !important; border-color: rgba(225,29,72,.35)!important}
+    .overdue{color:var(--danger);font-weight:700}
+    .due-soon{color:var(--warn);font-weight:700}
+    .done .title{text-decoration:line-through;color:#9aa3b2}
+    .actions{display:flex;gap:8px}
+    .actions button{background:#f5f7ff11;border:1px solid var(--border);border-radius:10px;padding:8px 10px;color:var(--text)}
+    footer{padding:14px;display:flex;gap:8px;flex-wrap:wrap}
+    footer button{padding:10px 12px;border:1px solid var(--border);background:#fff0;border-radius:12px;color:var(--text)}
+    .settings{padding:12px;display:grid;gap:12px}
+    .empty{padding:24px;text-align:center;color:var(--muted);font-size:var(--fs-2)}
+    @media (max-width:600px){
+      form#newTask{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🧹 Pulizie di Casa</h1>
+    <span class="pill" id="who-pill" title="Utente attivo">
+      <span class="avatar" id="avatar"></span>
+      Utente: <strong id="who"></strong>
+    </span>
+  </header>
+
+  <div class="container">
+    <section class="card">
+      <form id="newTask" autocomplete="off">
+        <input id="title" placeholder="Attività (es. Passare l'aspirapolvere)" required>
+        <select id="room" aria-label="Stanza">
+          <option value="">Stanza</option>
+          <option>Cucina</option><option>Soggiorno</option><option>Bagno</option>
+          <option>Camera</option><option>Ingresso</option><option>Balcone</option><option>Altro</option>
+        </select>
+        <select id="priority" aria-label="Priorità">
+          <option value="2">Priorità media</option>
+          <option value="1">Priorità alta</option>
+          <option value="3">Priorità bassa</option>
+        </select>
+
+        <!-- Nuova pianificazione -->
+        <label class="grid-span-2">
+          Inizio (giorno e ora)
+          <input id="startAt" type="datetime-local" placeholder="YYYY-MM-DD hh:mm">
+        </label>
+
+        <div class="grid-span-2 inline">
+          <label class="switch">
+            <input type="checkbox" id="isRepeating">
+            Ripetitivo (calendario fisso)
+          </label>
+          <span class="help">Se attivo, l’occorrenza è ancorata alla data/ora iniziale</span>
+        </div>
+
+        <div id="repeatBar" class="grid-span-2 row" style="display:none">
+          <input id="repeatEvery" type="number" min="1" step="1" value="1" aria-label="Ogni">
+          <select id="repeatUnit" aria-label="Unità">
+            <option value="days">giorni</option>
+            <option value="weeks">settimane</option>
+            <option value="months">mesi</option>
+          </select>
+          <span class="help">Esempio: ogni 2 settimane</span>
+        </div>
+
+        <textarea id="notes" class="grid-span-2" placeholder="Note (opzionale)"></textarea>
+        <input id="assignee" placeholder="Assegnata a (es. Alberto, Giorgia)">
+        <button type="submit" class="btn primary">Aggiungi</button>
+      </form>
+    </section>
+
+    <nav class="tabs">
+      <button data-tab="oggi" class="active">Oggi</button>
+      <button data-tab="tutte">Tutte</button>
+      <button data-tab="fatte">Completate</button>
+      <button data-tab="settings">Impostazioni</button>
+    </nav>
+
+    <section class="card" id="view">
+      <ul id="list"></ul>
+      <div class="settings" style="display:none">
+        <div class="row">
+          <input id="me" placeholder="Il tuo nome (es. Alberto)">
+          <input id="partner" placeholder="Nome partner (es. Giorgia)">
+        </div>
+        <div class="row">
+          <button id="swapUser" type="button" class="btn">Cambia utente attivo</button>
+          <button id="clearDone" type="button" class="btn">Cancella completate</button>
+        </div>
+
+        <!-- Colori del logo -->
+        <div class="row">
+          <label>Colore primario <input id="colorPrimary" type="color" value="#007AFF"></label>
+          <label>Colore secondario <input id="colorSecondary" type="color" value="#e11d48"></label>
+        </div>
+
+        <div class="row">
+          <button id="export" type="button" class="btn">Esporta JSON</button>
+          <input type="file" id="import" accept="application/json">
+        </div>
+
+        <div class="row">
+          <label style="flex:2">Ora promemoria (HH:MM)
+            <input id="remindAt" placeholder="09:00" value="09:00">
+          </label>
+          <label class="switch" title="Riproponi le attività non completate">
+            <input type="checkbox" id="resurfaceUnfinished">
+            Riproponi non completate ogni giorno
+          </label>
+        </div>
+
+        <div class="row">
+          <button id="toggleTheme" type="button" class="btn">Toggle tema scuro</button>
+          <button id="enableNotifs" type="button" class="btn">Abilita notifiche</button>
+        </div>
+
+        <small class="help">I dati restano solo su questo dispositivo. Per condividere, usa Esporta/Importa (AirDrop, iMessage, WhatsApp).</small>
+      </div>
+      <div class="empty" id="empty" style="display:none">Niente da mostrare 🧽</div>
+    </section>
+
+    <footer class="card">
+      <button id="shareToday" type="button" class="btn">Condividi lista di oggi</button>
+      <button id="backup" type="button" class="btn">Backup</button>
+      <button id="restore" type="button" class="btn">Ripristina backup</button>
+    </footer>
+  </div>
+
+  <script>
+    // === Versione dati / cache ===
+    const DBKEY = "pulizie-db-v3";
+    const nowISO = () => new Date().toISOString();
+    const todayYMD = () => new Date().toISOString().slice(0,10);
+
+    const defaults = {
+      version: 3,
+      tasks: [],
+      users: { me:"Alberto", partner:"Giorgia" },
+      active: "me",
+      history: [],
+      settings: {
+        remindAt:"09:00",
+        theme:"auto",
+        colorPrimary:"#007AFF",
+        colorSecondary:"#e11d48",
+        resurfaceUnfinished: false
+      },
+      notified: {}
+    };
+
+    // Migrazione da v2 -> v3 se esiste
+    function loadDb(){
+      const rawV3 = localStorage.getItem(DBKEY);
+      if(rawV3){
+        const data = JSON.parse(rawV3);
+        return { ...defaults, ...data, settings: { ...defaults.settings, ...(data.settings||{}) } };
+      }
+      const rawV2 = localStorage.getItem("pulizie-db-v2");
+      if(rawV2){
+        const old = JSON.parse(rawV2);
+        const migrated = {
+          ...defaults,
+          tasks: (old.tasks||[]).map(t=>({
+            id: t.id,
+            title: t.title,
+            room: t.room||"",
+            priority: t.priority||2,
+            assignee: t.assignee||"",
+            // nuova pianificazione: se prima c’era due/lastDone, converto best-effort
+            startAt: t.due ? (t.due+"T09:00") : null,
+            repeat: (t.repeatDays && t.repeatDays>0) ? { enabled:true, every: t.repeatDays, unit:"days" } : { enabled:false, every:1, unit:"days" },
+            notes: t.notes||"",
+            createdAt: t.createdAt||nowISO(),
+            lastDone: t.lastDone||null,
+            done: t.done||false
+          })),
+          users: old.users||defaults.users,
+          active: old.active||"me",
+          history: old.history||[],
+          settings: { ...defaults.settings, ...(old.settings||{}) },
+          notified: old.notified||{}
+        };
+        localStorage.setItem(DBKEY, JSON.stringify(migrated));
+        return migrated;
+      }
+      localStorage.setItem(DBKEY, JSON.stringify(defaults));
+      return structuredClone(defaults);
+    }
+    let state = loadDb();
+    const save = ()=> localStorage.setItem(DBKEY, JSON.stringify(state));
+
+    // === SW ===
+    if ("serviceWorker" in navigator){
+      window.addEventListener("load", ()=>{
+        navigator.serviceWorker.register("./service-worker.js").catch(()=>{});
+      });
+    }
+
+    // === Elements ===
+    const whoEl = document.getElementById("who");
+    const avatarEl = document.getElementById("avatar");
+    const whoPill = document.getElementById("who-pill");
+    const listEl = document.getElementById("list");
+    const emptyEl = document.getElementById("empty");
+    const settingsEl = document.querySelector(".settings");
+
+    const repeatBar = document.getElementById("repeatBar");
+    const isRepeatingEl = document.getElementById("isRepeating");
+    const repeatEveryEl = document.getElementById("repeatEvery");
+    const repeatUnitEl = document.getElementById("repeatUnit");
+
+    // === Theme & brand colors ===
+    function applyTheme(){
+      document.documentElement.classList.toggle("dark", state.settings.theme === "dark");
+      document.documentElement.style.setProperty("--brand", state.settings.colorPrimary || "#007AFF");
+      document.documentElement.style.setProperty("--accent-partner", state.settings.colorSecondary || "#e11d48");
+    }
+    applyTheme();
+
+    document.getElementById("toggleTheme").addEventListener("click", ()=>{
+      state.settings.theme = (state.settings.theme === "dark") ? "auto" : "dark";
+      save(); applyTheme();
+    });
+
+    // === Tabs ===
+    let tab = "oggi";
+    document.querySelectorAll("nav.tabs button").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        document.querySelectorAll("nav.tabs button").forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+        tab = btn.dataset.tab;
+        render();
+      });
+    });
+
+    // === Form ===
+    const newTaskForm = document.getElementById("newTask");
+    isRepeatingEl.addEventListener("change", ()=>{
+      repeatBar.style.display = isRepeatingEl.checked ? "grid" : "none";
+    });
+
+    newTaskForm.addEventListener("submit", (e)=>{
+      e.preventDefault();
+      const title = document.getElementById("title").value.trim();
+      if(!title) return;
+
+      const t = {
+        id: crypto.randomUUID(),
+        title,
+        room: document.getElementById("room").value.trim(),
+        priority: parseInt(document.getElementById("priority").value,10),
+        assignee: document.getElementById("assignee").value.trim(),
+        startAt: document.getElementById("startAt").value || null,              // YYYY-MM-DDTHH:MM
+        repeat: {
+          enabled: isRepeatingEl.checked,
+          every: parseInt(repeatEveryEl.value||"1",10),
+          unit: repeatUnitEl.value
+        },
+        notes: document.getElementById("notes").value.trim(),
+        createdAt: nowISO(),
+        lastDone: null,
+        done: false
+      };
+      state.tasks.push(t);
+      save();
+      newTaskForm.reset();
+      repeatBar.style.display = "none";
+      render(); scheduleCheckSoon();
+    });
+
+    // === Settings ===
+    const meInput = document.getElementById("me");
+    const partnerInput = document.getElementById("partner");
+    const swapBtn = document.getElementById("swapUser");
+    const remindAtInput = document.getElementById("remindAt");
+    const enableNotifsBtn = document.getElementById("enableNotifs");
+    const colorPrimary = document.getElementById("colorPrimary");
+    const colorSecondary = document.getElementById("colorSecondary");
+    const resurfaceChk = document.getElementById("resurfaceUnfinished");
+
+    meInput.value = state.users.me || "Alberto";
+    partnerInput.value = state.users.partner || "Giorgia";
+    remindAtInput.value = state.settings.remindAt || "09:00";
+    colorPrimary.value = state.settings.colorPrimary || "#007AFF";
+    colorSecondary.value = state.settings.colorSecondary || "#e11d48";
+    resurfaceChk.checked = !!state.settings.resurfaceUnfinished;
+
+    meInput.addEventListener("change", ()=>{ state.users.me = meInput.value.trim()||"Alberto"; save(); renderPill(); });
+    partnerInput.addEventListener("change", ()=>{ state.users.partner = partnerInput.value.trim()||"Giorgia"; save(); renderPill(); });
+    remindAtInput.addEventListener("change", ()=>{
+      const v = remindAtInput.value.trim();
+      if(/^\d{2}:\d{2}$/.test(v)){ state.settings.remindAt = v; save(); scheduleCheckSoon(); }
+      else { alert("Formato orario non valido. Usa HH:MM"); remindAtInput.value = state.settings.remindAt||"09:00"; }
+    });
+    swapBtn.addEventListener("click", ()=>{ state.active = state.active==="me" ? "partner":"me"; save(); renderPill(); });
+    enableNotifsBtn.addEventListener("click", requestNotifs);
+    colorPrimary.addEventListener("input", ()=>{ state.settings.colorPrimary = colorPrimary.value; save(); applyTheme(); });
+    colorSecondary.addEventListener("input", ()=>{ state.settings.colorSecondary = colorSecondary.value; save(); applyTheme(); });
+    resurfaceChk.addEventListener("change", ()=>{ state.settings.resurfaceUnfinished = resurfaceChk.checked; save(); render(); });
+
+    document.getElementById("clearDone").addEventListener("click", ()=>{
+      state.tasks = state.tasks.filter(t=>!t.done);
+      save(); render();
+    });
+
+    // Export/Import
+    document.getElementById("export").addEventListener("click", async ()=>{
+      const payload = JSON.stringify(state, null, 2);
+      const file = new File([payload], "pulizie-export-"+todayYMD()+".json", {type:"application/json"});
+      if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+        try{ await navigator.share({title:"Pulizie", files:[file], text:"Esporta elenco pulizie"}); } catch(e){}
+      } else {
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(file); a.download = file.name; a.click(); URL.revokeObjectURL(a.href);
+      }
+    });
+    document.getElementById("import").addEventListener("change", async (e)=>{
+      const file = e.target.files[0]; if(!file) return;
+      try{
+        const incoming = JSON.parse(await file.text());
+        // merge tasks by id
+        const map = new Map(state.tasks.map(t=>[t.id, t]));
+        for(const t of (incoming.tasks||[])){
+          if(map.has(t.id)){
+            const local = map.get(t.id);
+            map.set(t.id, { ...local, ...t, done: local.done || t.done });
+          } else map.set(t.id, t);
+        }
+        state.tasks = Array.from(map.values());
+        state.users = { ...state.users, ...(incoming.users||{}) };
+        state.settings = { ...state.settings, ...(incoming.settings||{}) };
+        // merge history
+        const hist = new Set((state.history||[]).map(h=>h.k));
+        for(const h of (incoming.history||[])){
+          if(!h.k) h.k = h.id+"@"+(h.when||"");
+          if(!hist.has(h.k)){ hist.add(h.k); (state.history||[]).push(h); }
+        }
+        save(); render(); alert("Import completato ✅");
+      }catch(err){ alert("Import non riuscito: "+err); }
+      finally { e.target.value = ""; }
+    });
+
+    // Backup & Restore
+    document.getElementById("backup").addEventListener("click", ()=>{
+      const payload = JSON.stringify(state, null, 2);
+      const a = document.createElement("a");
+      const file = new File([payload], "pulizie-backup-"+todayYMD()+".json", {type:"application/json"});
+      a.href = URL.createObjectURL(file); a.download = file.name; a.click(); URL.revokeObjectURL(a.href);
+    });
+    document.getElementById("restore").addEventListener("click", ()=>{
+      const input = document.createElement("input");
+      input.type = "file"; input.accept = "application/json";
+      input.onchange = async (e)=>{
+        const file = e.target.files[0]; if(!file) return;
+        try{ state = JSON.parse(await file.text()); save(); render(); scheduleCheckSoon(); }
+        catch(err){ alert("Ripristino non riuscito: "+err); }
+      };
+      input.click();
+    });
+
+    // Share today
+    document.getElementById("shareToday").addEventListener("click", async ()=>{
+      const items = getFiltered("oggi").map(t=>`• ${t.title}${t.assignee? " ("+t.assignee+")":""}`);
+      const txt = items.length? "Pulizie di oggi:\n"+items.join("\n") : "Nessuna attività per oggi";
+      if(navigator.share){ try{ await navigator.share({text: txt}); }catch(e){} }
+      else { await navigator.clipboard.writeText(txt); alert("Lista copiata negli appunti"); }
+    });
+
+    // === UI helpers ===
+    function renderPill(){
+      const name = state.active === "me" ? state.users.me : state.users.partner;
+      whoEl.textContent = name || (state.active === "me" ? "Alberto" : "Giorgia");
+      whoPill.title = "Utente attivo: " + whoEl.textContent;
+      const color = state.active === "me"
+        ? getComputedStyle(document.documentElement).getPropertyValue('--accent-me')
+        : getComputedStyle(document.documentElement).getPropertyValue('--accent-partner');
+      avatarEl.style.background = color.trim();
+    }
+
+    // === Pianificazione (calendario fisso) ===
+    function parseLocal(dateTimeLocal){
+      // dateTimeLocal es. "2025-08-17T09:00"
+      return dateTimeLocal ? new Date(dateTimeLocal) : null;
+    }
+    function addInterval(d, every, unit){
+      const nd = new Date(d.getTime());
+      if(unit==="days") nd.setDate(nd.getDate()+every);
+      else if(unit==="weeks") nd.setDate(nd.getDate()+7*every);
+      else if(unit==="months") nd.setMonth(nd.getMonth()+every);
+      return nd;
+    }
+    function nextOccurrenceFromStart(startAt, every, unit, ref){
+      // Restituisce la prossima occorrenza >= ref, ancorata a startAt
+      if(!startAt) return null;
+      let cur = new Date(startAt.getTime());
+      if(!every || every<1) return cur;
+      // se la prima è già >= ref, ritorna
+      if(cur >= ref) return cur;
+      // altrimenti avanza a step finché raggiunge/oltrepassa ref
+      // (per "months" non è triviale calcolare k in O(1), andiamo iterativo ma è ok per N piccolo)
+      let guard = 0, maxSteps = 1000;
+      while(cur < ref && guard++ < maxSteps){ cur = addInterval(cur, every, unit); }
+      return cur;
+    }
+
+    function isSameDay(a,b){
+      return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+    }
+    function statusForTask(t){
+      // Calcola la "prossima scadenza" da mostrare, in base a startAt e repeat
+      const now = new Date();
+      const todayStart = new Date(todayYMD()+"T00:00:00");
+
+      const start = parseLocal(t.startAt);
+      if(!start){
+        return { next:null, overdue:false, dueSoon:false, today:false };
+      }
+      let next;
+      if(t.repeat?.enabled){
+        next = nextOccurrenceFromStart(start, t.repeat.every, t.repeat.unit, now);
+      } else {
+        next = start;
+      }
+      // per la vista e le classi
+      const overdue = next < now && !isSameDay(next, now);
+      const dueSoon = isSameDay(next, now);
+      const today = isSameDay(next, todayStart);
+
+      return { next, overdue, dueSoon, today };
+    }
+
+    function getFiltered(which){
+      const tasks = [...state.tasks];
+      // ordinamento: non fatte prima, priorità, prossima scadenza
+      tasks.sort((a,b)=>{
+        const sa = statusForTask(a).next || new Date("9999-12-31");
+        const sb = statusForTask(b).next || new Date("9999-12-31");
+        return (a.done - b.done) || (a.priority - b.priority) || (sa - sb);
+      });
+
+      if(which==="oggi"){
+        const todayStart = new Date(todayYMD()+"T00:00:00");
+        return tasks.filter(t=>{
+          if(t.done) return false;
+          const s = statusForTask(t);
+          if(s.today) return true;
+          if(state.settings.resurfaceUnfinished){
+            // se non completata e aveva un'occorrenza passata, riproponi
+            const start = parseLocal(t.startAt);
+            if(!start) return false;
+            if(t.repeat?.enabled){
+              const prev = nextOccurrenceFromStart(start, t.repeat.every, t.repeat.unit, new Date(todayStart.getTime()-1));
+              // prev è l'occorrenza più recente <= oggi: se < oggi e non fatta, ripropongo
+              if(prev && prev < todayStart) return true;
+            } else {
+              if(start < todayStart) return true;
+            }
+          }
+          return false;
+        });
+      }
+      if(which==="fatte"){
+        return tasks.filter(t=>t.done);
+      }
+      return tasks;
+    }
+
+    function humanNext(s){
+      if(!s.next) return "";
+      const y = s.next.getFullYear();
+      const m = String(s.next.getMonth()+1).padStart(2,"0");
+      const d = String(s.next.getDate()).padStart(2,"0");
+      const hh = String(s.next.getHours()).padStart(2,"0");
+      const mm = String(s.next.getMinutes()).padStart(2,"0");
+      return `${y}-${m}-${d} ${hh}:${mm}`;
+    }
+
+    function render(){
+      renderPill();
+      const showSettings = (tab==="settings");
+      settingsEl.style.display = showSettings? "block":"none";
+      listEl.innerHTML = "";
+      emptyEl.style.display = "none";
+
+      if(showSettings){
+        if(!state.tasks.length) emptyEl.style.display = "block";
+        return;
+      }
+
+      const tasks = getFiltered(tab);
+      if(!tasks.length){
+        emptyEl.style.display = "block";
+        return;
+      }
+
+      for(const t of tasks){
+        const li = document.createElement("li");
+        li.className = "task"+(t.done? " done": "");
+        li.dataset.id = t.id;
+
+        const chk = document.createElement("div");
+        chk.className = "chk";
+        const input = document.createElement("input");
+        input.type = "checkbox"; input.checked = !!t.done;
+        input.addEventListener("change", ()=>{
+          t.done = input.checked;
+          if(t.done){
+            t.lastDone = nowISO();
+            (state.history ||= []).push({k: t.id+"@"+t.lastDone, id:t.id, when:t.lastDone, who: state.active});
+          }
+          save(); render();
+        });
+        chk.appendChild(input);
+        li.appendChild(chk);
+
+        const main = document.createElement("div");
+        main.className = "task-main";
+        const title = document.createElement("div");
+        title.className = "title";
+        title.textContent = t.title;
+        main.appendChild(title);
+
+        const meta = document.createElement("div");
+        meta.className = "meta";
+        const b = document.createElement("div");
+        b.className = "badges";
+        const tags = [];
+        if(t.room) tags.push(t.room);
+        tags.push(t.priority===1? "Alta" : t.priority===2? "Media":"Bassa");
+        if(t.assignee){
+          const who = t.assignee.trim().toLowerCase();
+          const cls = (who === (state.users.me||"").trim().toLowerCase())? "assignee-me" :
+                      (who === (state.users.partner||"").trim().toLowerCase())? "assignee-partner" : "";
+          tags.push(`<span class="${cls}">A: ${t.assignee}</span>`);
+        }
+        if(t.repeat?.enabled){
+          tags.push(`Ogni ${t.repeat.every} ${(t.repeat.unit==="days"?"giorni":t.repeat.unit==="weeks"?"settimane":"mesi")}`);
+        } else {
+          tags.push("Singolo");
+        }
+        b.innerHTML = tags.map(s=> s.startsWith("<span")? s : `<span>${s}</span>`).join(" ");
+        meta.appendChild(b);
+
+        const s = statusForTask(t);
+        if(s.next){
+          const sts = s.overdue ? "overdue" : s.dueSoon ? "due-soon" : "";
+          const due = document.createElement("div");
+          due.innerHTML = `Prossima: <strong class="${sts}">${humanNext(s)}</strong>`;
+          meta.appendChild(due);
+        }
+        if(t.notes){
+          const notes = document.createElement("div");
+          notes.textContent = t.notes;
+          meta.appendChild(notes);
+        }
+        main.appendChild(meta);
+        li.appendChild(main);
+
+        const actions = document.createElement("div");
+        actions.className = "actions";
+
+        const editBtn = document.createElement("button");
+        editBtn.textContent = "Modifica";
+        editBtn.addEventListener("click", ()=> editTask(t));
+        actions.appendChild(editBtn);
+
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "Elimina";
+        delBtn.addEventListener("click", ()=>{
+          if(confirm("Eliminare questa attività?")){
+            state.tasks = state.tasks.filter(x=>x.id!==t.id);
+            save(); render();
+          }
+        });
+        actions.appendChild(delBtn);
+
+        li.appendChild(actions);
+        listEl.appendChild(li);
+      }
+    }
+
+    function editTask(t){
+      const title = prompt("Attività:", t.title); if(title===null) return;
+      const room = prompt("Stanza:", t.room||""); if(room===null) return;
+      const assignee = prompt("Assegnata a:", t.assignee||""); if(assignee===null) return;
+      const priorityStr = prompt("Priorità (1=Alta,2=Media,3=Bassa):", String(t.priority||2)); if(priorityStr===null) return;
+      const startAt = prompt("Inizio (YYYY-MM-DDTHH:MM):", t.startAt||""); if(startAt===null) return;
+      const rep = confirm("È ripetitivo (OK) o singolo (Annulla)?");
+      let every = t.repeat?.every||1, unit = t.repeat?.unit||"days";
+      if(rep){
+        const eStr = prompt("Ogni (numero intero ≥1):", String(every)); if(eStr===null) return;
+        every = Math.max(1, parseInt(eStr||"1",10)||1);
+        const uStr = prompt("Unità (days|weeks|months):", unit); if(uStr===null) return;
+        unit = (["days","weeks","months"].includes(uStr))? uStr : "days";
+      }
+
+      t.title = title.trim()||t.title;
+      t.room = room.trim();
+      t.assignee = assignee.trim();
+      t.priority = Math.min(3, Math.max(1, parseInt(priorityStr||"2",10)||2));
+      t.startAt = (startAt||"").trim() || null;
+      t.repeat = { enabled: rep, every, unit };
+      save(); render(); scheduleCheckSoon();
+    }
+
+    // === Notifiche locali (quando l'app è attiva) ===
+    function requestNotifs(){
+      if(!("Notification" in window)) { alert("Notifiche non supportate"); return; }
+      if(Notification.permission === "granted"){ alert("Notifiche già abilitate ✅"); return; }
+      Notification.requestPermission().then(p => {
+        if(p === "granted"){ alert("Notifiche abilitate ✅"); scheduleCheckSoon(); }
+        else { alert("Notifiche non abilitate"); }
+      });
+    }
+
+    function reminderDateForOccurrence(dt){
+      // porta l'orario alla remindAt del giorno dell'occorrenza
+      const [hh, mm] = (state.settings.remindAt||"09:00").split(":").map(x=>parseInt(x,10));
+      const d = new Date(dt.getTime());
+      d.setHours(hh||9, mm||0, 0, 0);
+      return d;
+    }
+
+    function shouldNotify(t){
+      if(t.done) return false;
+      const s = statusForTask(t);
+      if(!s.next) return false;
+      const today = todayYMD();
+      const key = t.id+"@"+today;
+      if(state.notified[key]) return false;
+      const now = new Date();
+      let target;
+      if(s.dueSoon){ // oggi
+        target = reminderDateForOccurrence(s.next);
+        return now >= target;
+      }
+      if(s.overdue){
+        target = reminderDateForOccurrence(new Date(today+"T00:00:00"));
+        return now >= target;
+      }
+      return false;
+    }
+
+    function notifyTask(t){
+      state.notified[t.id+"@"+todayYMD()] = true; save();
+      const s = statusForTask(t);
+      const title = "Promemoria pulizie";
+      const body = `${t.title}${t.assignee? " ("+t.assignee+")":""} — Prossima: ${humanNext(s)}`;
+      if(navigator.serviceWorker?.ready){
+        navigator.serviceWorker.ready.then(reg => {
+          if(reg.showNotification){
+            reg.showNotification(title, {
+              body,
+              icon: "./icons/icon-192.png",
+              badge: "./icons/icon-192.png",
+              tag: t.id
+            });
+          } else if("Notification" in window && Notification.permission==="granted"){
+            new Notification(title, { body });
+          }
+        });
+      } else if("Notification" in window && Notification.permission==="granted"){
+        new Notification(title, { body });
+      }
+    }
+
+    let checkTimer = null;
+    function scheduleCheckSoon(){ if(checkTimer) clearTimeout(checkTimer); checkTimer = setTimeout(runNotificationScan, 600); }
+    function runNotificationScan(){
+      if(!("Notification" in window) || Notification.permission!=="granted") return;
+      const pending = state.tasks.filter(t=>shouldNotify(t));
+      for(const t of pending){ notifyTask(t); }
+    }
+    setInterval(runNotificationScan, 60000); // ogni minuto
+    scheduleCheckSoon();
+
+    // Init
+    function initUIFromState(){
+      applyTheme(); renderPill(); render();
+    }
+    initUIFromState();
+  </script>
+</body>
+</html>
