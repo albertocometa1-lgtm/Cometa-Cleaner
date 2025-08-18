@@ -10,378 +10,410 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#00B3FF">
 <style>
+:root{
+  --brand:#00B3FF; --brand-2:#7C3AED;
+  --bg:#F4F7FF; --card:#FFFFFF; --text:#0D1321; --muted:#5B6B86; --border:#E3E8F5;
+  --shadow:0 10px 24px rgba(15,23,42,.10);
+  --radius:16px; --fs-1:18px; --fs-2:16px; --fs-3:14px;
+  --c-future:#ffffff; --c-future-text:#0D1321;
+  --c-due:#FFD166; --c-due-text:#0D1321;
+  --c-over:#FF6B6B; --c-over-text:#ffffff;
+  --c-done:#06D6A0; --c-done-text:#0D1321;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+}
+@media (prefers-color-scheme: dark){
   :root{
-    --brand:#00B3FF; --brand-2:#7C3AED;
-    --accent-me:#2563EB; --accent-partner:#E11D48;
-    --bg:#F4F7FF; --card:#FFFFFF; --text:#0D1321; --muted:#5B6B86; --border:#E3E8F5;
-    --shadow:0 10px 24px rgba(15,23,42,.10);
-    --radius:16px; --fs-1:18px; --fs-2:16px; --fs-3:14px;
-    --c-future:#ffffff;  --c-future-text:#0D1321;
-    --c-due:#FFD166;     --c-due-text:#0D1321;
-    --c-over:#FF6B6B;    --c-over-text:#ffffff;
-    --c-done:#06D6A0;    --c-done-text:#0D1321;
-    --safe-bottom: env(safe-area-inset-bottom, 0px);
-    --safe-top: env(safe-area-inset-top, 0px);
+    --bg:#0E1220; --card:#12182A; --text:#ECF2FF; --muted:#A8B3C7; --border:#1E2640; --shadow:0 10px 24px rgba(0,0,0,.35);
+    --c-future:#12182A; --c-future-text:#ECF2FF; --c-due:#B08900; --c-due-text:#ffffff; --c-over:#C0392B; --c-over-text:#ffffff; --c-done:#1B7F5D; --c-done-text:#ECF2FF;
   }
-  @media (prefers-color-scheme: dark){
-    :root{
-      --bg:#0E1220; --card:#12182A; --text:#ECF2FF; --muted:#A8B3C7; --border:#1E2640; --shadow:0 10px 24px rgba(0,0,0,.35);
-      --c-future:#12182A; --c-future-text:#ECF2FF; --c-due:#B08900; --c-due-text:#ffffff; --c-over:#C0392B; --c-over-text:#ffffff; --c-done:#1B7F5D; --c-done-text:#ECF2FF;
-    }
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,'Helvetica Neue',Arial}
-  body{background:var(--bg);color:var(--text);line-height:1.45; overflow-x:hidden; padding-bottom:calc(70px + var(--safe-bottom));}
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,'Helvetica Neue',Arial}
+body{background:var(--bg);color:var(--text);line-height:1.45; overflow-x:hidden; padding-bottom:calc(70px + var(--safe-bottom));}
+header{position:sticky; top:0; z-index:30; background:linear-gradient(0deg, rgba(255,255,255,.92), rgba(255,255,255,.98)); backdrop-filter:saturate(140%) blur(6px); box-shadow:var(--shadow); padding:calc(10px + var(--safe-top)) 12px 10px; display:flex; align-items:center; gap:10px;}
+@media (prefers-color-scheme: dark){
+  header{ background:linear-gradient(0deg, rgba(10,14,28,.92), rgba(10,14,28,.98)); }
+}
+header h1{font-size:var(--fs-1); margin:0; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.logo{width:26px;height:26px;border-radius:6px;object-fit:cover;border:1px solid var(--border); background:linear-gradient(135deg,var(--brand),var(--brand-2));}
+.user-pill{display:flex; align-items:center; gap:8px; border:1px solid var(--border); padding:6px 10px; border-radius:999px; background:#E6F7FF;}
+.avatar{width:20px; height:20px; border-radius:50%; object-fit:cover; background:var(--brand-2);}
+.container{max-width:860px; margin:0 auto; padding:12px;}
+.view{display:none} .view.active{display:block}
 
-  header{position:sticky; top:0; z-index:30; background:linear-gradient(0deg, rgba(255,255,255,.92), rgba(255,255,255,.98)); backdrop-filter:saturate(140%) blur(6px); box-shadow:var(--shadow); padding:calc(10px + var(--safe-top)) 12px 10px; display:flex; align-items:center; gap:10px;}
-  @media (prefers-color-scheme: dark){
-    header{ background:linear-gradient(0deg, rgba(10,14,28,.92), rgba(10,14,28,.98)); }
-  }
-  header h1{font-size:var(--fs-1); margin:0; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .logo{width:26px;height:26px;border-radius:6px;object-fit:cover;background:#dbeafe;border:1px solid var(--border)}
-  .user-pill{display:flex; align-items:center; gap:8px; border:1px solid var(--border); padding:6px 10px; border-radius:999px; background:#E6F7FF;}
-  .avatar{width:20px; height:20px; border-radius:50%; object-fit:cover; background:var(--brand-2);}
-  .container{max-width:860px; margin:0 auto; padding:12px;}
-  .view{display:none} .view.active{display:block}
+/* Tabs (interni alla vista To Do) */
+.tabs{display:flex; gap:8px; margin:6px 0 10px}
+.tab{flex:0 0 auto; padding:8px 12px; border-radius:999px; border:1px solid var(--border); background:#f3f7ff; font-weight:700; cursor:pointer}
+.tab.active{ background:linear-gradient(135deg,var(--brand),var(--brand-2)); color:#fff; border-color:transparent;}
 
-  /* Tabs + Filtri */
-  .tabs{display:flex; gap:8px; margin:6px 0 10px}
-  .tab{flex:0 0 auto; padding:8px 12px; border-radius:999px; border:1px solid var(--border); background:#f3f7ff; font-weight:700; cursor:pointer}
-  .tab.active{ background:linear-gradient(135deg,var(--brand),var(--brand-2)); color:#fff; border-color:transparent;}
-  .filters-bar{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:6px 0 8px}
-  .chips{display:flex; gap:6px; flex-wrap:wrap}
-  .chip{font-size:12px; padding:4px 8px; border-radius:999px; border:1px solid var(--border); background:#eef2ff}
-  details.filter{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:10px 12px; margin:8px 0; box-shadow:var(--shadow)}
-  details.filter>summary{cursor:pointer; font-weight:800}
+/* Lista pulizie */
+ul#list{ list-style:none; padding:0; margin:0;}
+li.task{ margin:10px 0; border-radius:18px; border:1px solid var(--border); box-shadow:var(--shadow); overflow:hidden}
+.task-head{ display:flex; align-items:center; gap:10px; padding:12px 14px; cursor:pointer; }
+.chk input{ width:26px; height:26px; }
+.head-main{ flex:1; min-width:0; }
+.title{ font-weight:800; font-size:var(--fs-2); word-break:break-word; }
+.notes-line{ font-size:var(--fs-3); opacity:.9; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px;}
+.date-badge{ font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid rgba(0,0,0,.08); background:rgba(255,255,255,.35)}
+.chev{ transition:transform .2s } li.task.expanded .chev{ transform:rotate(90deg); }
+.task-details{ display:none; padding:10px 14px 14px; border-top:1px dashed rgba(0,0,0,.12); }
+li.task.expanded .task-details{ display:block; }
 
-  /* Lista pulizie */
-  ul#list{ list-style:none; padding:0; margin:0;}
-  li.task{ margin:10px 0; border-radius:18px; border:1px solid var(--border); box-shadow:var(--shadow); overflow:hidden}
-  .task-head{ display:flex; align-items:center; gap:10px; padding:12px 14px; cursor:pointer; }
-  .chk input{ width:26px; height:26px; }
-  .head-main{ flex:1; min-width:0; }
-  .title{ font-weight:800; font-size:var(--fs-2); word-break:break-word; }
-  .notes-line{ font-size:var(--fs-3); opacity:.8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px;}
-  .date-badge{ font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid rgba(0,0,0,.08); background:rgba(255,255,255,.35)}
-  .chev{ transition:transform .2s } li.task.expanded .chev{ transform:rotate(90deg); }
-  .task-details{ display:none; padding:10px 14px 14px; border-top:1px dashed rgba(0,0,0,.12); }
-  li.task.expanded .task-details{ display:block; }
+/* Stato colori */
+li.task.future { background:var(--c-future); color:var(--c-future-text); }
+li.task.due { background:var(--c-due); color:var(--c-due-text); }
+li.task.over { background:var(--c-over); color:var(--c-over-text); }
+li.task.done { background:var(--c-done); color:var(--c-done-text); }
+li.task.future .date-badge{border-color:rgba(0,0,0,.08)}
+li.task.due .date-badge, li.task.over .date-badge, li.task.done .date-badge{ border-color:rgba(255,255,255,.35)}
+.badges{ display:flex; flex-wrap:wrap; gap:6px; margin-top:6px}
+.badges span{ font-size:11px; padding:4px 8px; border-radius:999px; border:1px solid rgba(0,0,0,.15); background:rgba(255,255,255,.25); }
+.assignee-me{ background:rgba(37,99,235,.2)!important; } .assignee-partner{ background:rgba(225,29,72,.2)!important; }
+.actions{ display:flex; gap:8px; margin-top:10px; flex-wrap:wrap }
+.btn{ padding:10px 12px; border:1px solid var(--border); border-radius:12px; background:rgba(255,255,255,.35); color:var(--text); cursor:pointer }
+.btn.primary{ background:var(--brand); color:#fff; border-color:var(--brand) }
+.btn-danger{ background:#E5484D; color:#fff; border-color:#E5484D }
+.empty{ padding:24px; text-align:center; color:var(--text); opacity:.9; font-size:var(--fs-2) }
 
-  /* Stato colori */
-  li.task.future { background:var(--c-future); color:var(--c-future-text); }
-  li.task.due    { background:var(--c-due); color:var(--c-due-text); }
-  li.task.over   { background:var(--c-over); color:var(--c-over-text); }
-  li.task.done   { background:var(--c-done); color:var(--c-done-text); }
-  li.task.future .date-badge{border-color:rgba(0,0,0,.08)}
-  li.task.due .date-badge, li.task.over .date-badge, li.task.done .date-badge{ border-color:rgba(255,255,255,.35)}
+/* Forms */
+.grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px } .grid .full{ grid-column:1/-1 }
+input, select, textarea{ padding:12px; border:1px solid var(--border); border-radius:12px; background:var(--card); color:var(--text); font-size:var(--fs-2) }
+textarea{ min-height:80px; resize:vertical }
 
-  .badges{ display:flex; flex-wrap:wrap; gap:6px; margin-top:6px}
-  .badges span{ font-size:11px; padding:4px 8px; border-radius:999px; border:1px solid rgba(0,0,0,.15); background:rgba(255,255,255,.25); }
-  .assignee-me{ background:rgba(37,99,235,.2)!important; } .assignee-partner{ background:rgba(225,29,72,.2)!important; }
-  .actions{ display:flex; gap:8px; margin-top:10px; flex-wrap:wrap }
-  .btn{ padding:10px 12px; border:1px solid var(--border); border-radius:12px; background:rgba(255,255,255,.35); color:var(--text); cursor:pointer }
-  .btn.primary{ background:var(--brand); color:#fff; border-color:var(--brand) }
-  .btn-danger{ background:#E5484D; color:#fff; border-color:#E5484D }
-  .empty{ padding:24px; text-align:center; color:var(--muted); font-size:var(--fs-2) }
+/* Bottom nav (aggiornata con Calendario) */
+.bottom-nav{
+  position:fixed; left:0; right:0; bottom:0; z-index:40; background:var(--card); border-top:1px solid var(--border); box-shadow:0 -8px 20px rgba(0,0,0,.06);
+  padding:8px max(12px, env(safe-area-inset-left)) calc(8px + var(--safe-bottom)) max(12px, env(safe-area-inset-right)); display:flex; gap:10px; justify-content:space-around;
+}
+.tabbtn{ flex:1; padding:10px 12px; border-radius:14px; border:1px solid var(--border); background:#f3f7ff; font-weight:700; cursor:pointer}
+.tabbtn.active{ border-color:var(--brand); color:#fff; background:linear-gradient(135deg,var(--brand),var(--brand-2)) }
 
-  /* Forms */
-  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px } .grid .full{ grid-column:1/-1 }
-  input, select, textarea{ padding:12px; border:1px solid var(--border); border-radius:12px; background:var(--card); color:var(--text); font-size:var(--fs-2) }
-  textarea{ min-height:80px; resize:vertical }
+/* Sheet editor fisso */
+.sheet{ position:fixed; left:50%; transform:translateX(-50%); bottom:0; width:min(860px,100vw); max-height:80vh; background:var(--card); border:1px solid var(--border); border-radius:18px 18px 0 0; box-shadow:0 -16px 40px rgba(0,0,0,.25); display:none; z-index:100; overflow-y:auto; }
+.sheet header{ position:sticky; top:0; background:var(--card); padding:12px 16px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); }
+.sheet .content{ padding:12px 16px 16px; }
 
-  /* Bottom nav */
-  .bottom-nav{ position:fixed; left:0; right:0; bottom:0; z-index:40; background:var(--card); border-top:1px solid var(--border); box-shadow:0 -8px 20px rgba(0,0,0,.06);
-    padding:8px max(12px, env(safe-area-inset-left)) calc(8px + var(--safe-bottom)) max(12px, env(safe-area-inset-right)); display:flex; gap:10px; justify-content:space-around;}
-  .tabbtn{ flex:1; padding:10px 12px; border-radius:14px; border:1px solid var(--border); background:#f3f7ff; font-weight:700; cursor:pointer}
-  .tabbtn.active{ border-color:var(--brand); color:#fff; background:linear-gradient(135deg,var(--brand),var(--brand-2)) }
+/* Classifica */
+.leader{ display:grid; gap:10px; }
+.row{ display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--border); padding:10px; border-radius:14px; box-shadow:var(--shadow); flex-wrap:wrap; overflow:hidden }
+.row .pts{ margin-left:auto; font-weight:800 }
+.history{ margin-top:12px; }
+.event{ display:flex; gap:10px; align-items:center; border:1px dashed var(--border); background:var(--card); padding:8px 10px; border-radius:12px; margin:6px 0; }
+.delta{ font-weight:800; }
+.delta.pos{ color:#117733 } .delta.neg{ color:#B00020 }
 
-  /* FAB */
-  .fab{ position:fixed; right:16px; bottom:calc(76px + var(--safe-bottom)); width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,var(--brand),var(--brand-2)); color:#fff; font-size:28px; font-weight:700; border:none; box-shadow:0 14px 30px rgba(0,0,0,.2); z-index:35 }
+/* Dati & Backup mobile */
+.grid-compact{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px; }
+@media (max-width:480px){ .grid-compact{ grid-template-columns:1fr; } }
+.btn.block{ width:100%; }
+.file-btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  padding:12px; border:1px solid var(--border); border-radius:12px;
+  background:#f3f7ff; cursor:pointer; text-align:center; font-weight:600;
+}
+.file-btn input[type="file"]{ display:none; }
+.small-note{ font-size:12px; opacity:.7; margin-top:8px; }
 
-  /* Sheet editor fisso */
-  .sheet{ position:fixed; left:50%; transform:translateX(-50%); bottom:0; width:min(860px,100vw); max-height:80vh; background:var(--card); border:1px solid var(--border); border-radius:18px 18px 0 0; box-shadow:0 -16px 40px rgba(0,0,0,.25); display:none; z-index:50; overflow-y:auto; }
-  .sheet header{ position:sticky; top:0; background:var(--card); padding:12px 16px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); }
-  .sheet .content{ padding:12px 16px 16px; }
+/* Toast */
+.toast-wrap{ position:fixed; left:50%; transform:translateX(-50%); bottom:calc(90px + var(--safe-bottom)); z-index:200; display:flex; flex-direction:column; gap:8px; align-items:center; }
+.toast{ background:#111827; color:#fff; padding:10px 14px; border-radius:12px; box-shadow:0 8px 20px rgba(0,0,0,.25); font-weight:600; max-width:90vw; }
+@media (prefers-color-scheme: light){ .toast{ background:#1f2937; } }
 
-  /* Classifica */
-  .leader{ display:grid; gap:10px; }
-  .row{ display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--border); padding:10px; border-radius:14px; box-shadow:var(--shadow)}
-  .row .pts{ margin-left:auto; font-weight:800 }
-  .history{ margin-top:12px; }
-  .event{ display:flex; gap:10px; align-items:center; border:1px dashed var(--border); background:var(--card); padding:8px 10px; border-radius:12px; margin:6px 0; }
-  .delta{ font-weight:800; }
-  .delta.pos{ color:#117733 } .delta.neg{ color:#B00020 }
+/* ---- Overlay/leggibilità su sfondo ---- */
+#viewTasks{ position:relative; }
+#viewTasks[data-hasbg="1"]::before{
+  content:""; position:absolute; inset:0; background: var(--bg-overlay, rgba(0,0,0,.28));
+  pointer-events:none; z-index:0;
+}
+#viewTasks > *{ position:relative; z-index:1; }
 
-  /* Dati & Backup mobile */
-  .grid-compact{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px; }
-  @media (max-width:480px){ .grid-compact{ grid-template-columns:1fr; } }
-  .btn.block{ width:100%; }
-  .file-btn{
-    display:inline-flex; align-items:center; justify-content:center; gap:8px;
-    padding:12px; border:1px solid var(--border); border-radius:12px;
-    background:#f3f7ff; cursor:pointer; text-align:center; font-weight:600;
-  }
-  .file-btn input[type="file"]{ display:none; }
-  .small-note{ font-size:12px; opacity:.7; margin-top:8px; }
+/* --- Drawer filtri (ottimizzato mobile) --- */
+.drawer{ position:fixed; inset:0; z-index:150; display:none; }
+.drawer.open{ display:block; }
+.drawer .scrim{ position:absolute; inset:0; background:rgba(0,0,0,.35); }
+.drawer .panel{
+  position:absolute; left:0; top:0; bottom:0; width:min(420px, 92vw);
+  background:var(--card); border-right:1px solid var(--border); box-shadow:var(--shadow);
+  transform:translateX(-100%); transition:transform .25s ease; padding:14px;
+  overflow:auto; padding-bottom:calc(14px + var(--safe-bottom));
+}
+.drawer.open .panel{ transform:none; }
+.drawer h3{ margin:0 0 10px 0; }
+@media (max-width:560px){
+  .drawer .panel{ width:100vw; border-right:none; border-radius:0 0 0 0; }
+}
 
-  /* Toast */
-  .toast-wrap{ position:fixed; left:50%; transform:translateX(-50%); bottom:calc(90px + var(--safe-bottom)); z-index:60; display:flex; flex-direction:column; gap:8px; align-items:center; }
-  .toast{ background:#111827; color:#fff; padding:10px 14px; border-radius:12px; box-shadow:0 8px 20px rgba(0,0,0,.25); font-weight:600; max-width:90vw; }
-  @media (prefers-color-scheme: light){ .toast{ background:#1f2937; } }
-
-  /* ---- Overlay/leggibilità su sfondo ---- */
-  #viewTasks{ position:relative; }
-  #viewTasks[data-hasbg="1"]::before{
-    content:""; position:absolute; inset:0;
-    background: var(--bg-overlay, rgba(0,0,0,.28));
-    pointer-events:none; z-index:0;
-  }
-  #viewTasks > *{ position:relative; z-index:1; }
-
-  @media (max-width:640px){ .grid{ grid-template-columns:1fr } .tab{flex:1} }
+/* ===== CALENDARIO ===== */
+.cal-toolbar{ display:flex; align-items:center; gap:8px; margin:8px 0 12px; }
+.cal-title{ font-weight:800; font-size:var(--fs-1); flex:1; text-align:center; }
+.cal-grid{
+  display:grid; grid-template-columns:repeat(7,1fr); gap:6px;
+}
+.cal-dow{ text-align:center; font-weight:700; font-size:12px; opacity:.8; padding:6px 0; }
+.cal-cell{
+  background:var(--card); border:1px solid var(--border); border-radius:10px; padding:8px; min-height:64px; position:relative;
+  display:flex; flex-direction:column; gap:6px; box-shadow:var(--shadow);
+}
+.cal-daynum{ font-weight:800; font-size:12px; opacity:.9; }
+.cal-badge{
+  position:absolute; top:8px; right:8px; font-size:11px; padding:3px 6px; border-radius:999px; border:1px solid var(--border); background:#f3f7ff;
+}
+.cal-cell.muted{ opacity:.55; }
+.cal-list{ margin-top:12px; }
+.cal-empty{ padding:12px; text-align:center; opacity:.8; }
 </style>
 </head>
 <body>
+<header>
+  <img id="appLogo" class="logo" alt="Logo">
+  <h1 id="appTitle">Pulizie di Casa</h1>
+  <span class="user-pill" id="userPill">
+    <img id="avatar" class="avatar" alt="">
+    <strong id="who">Utente</strong>
+  </span>
+</header>
+
+<main class="container">
+  <!-- VIEW: TO DO (pulizie) -->
+  <section id="viewTasks" class="view active" style="background-size:cover;background-position:center">
+    <div class="tabs">
+      <button class="tab active" data-scope="oggi">Oggi</button>
+      <button class="tab" data-scope="tutte">Tutte</button>
+      <button class="btn" id="toggleFilters" style="margin-left:auto">Filtri</button>
+    </div>
+    <div class="chips" id="activeChips" style="margin:0 0 8px 0"></div>
+    <ul id="list"></ul>
+    <div class="empty" id="empty" style="display:none">Niente da mostrare 🧽</div>
+  </section>
+
+  <!-- VIEW: CALENDARIO (nuovo) -->
+  <section id="viewCalendar" class="view">
+    <div class="cal-toolbar">
+      <button id="calPrev" class="btn" aria-label="Mese precedente">◀</button>
+      <div id="calTitle" class="cal-title">Mese Anno</div>
+      <button id="calNext" class="btn" aria-label="Mese successivo">▶</button>
+    </div>
+    <div style="display:flex; gap:8px; margin-bottom:8px;">
+      <button id="calToday" class="btn">Oggi</button>
+      <button id="calAdd" class="btn primary" style="margin-left:auto">Aggiungi pulizie</button>
+    </div>
+    <div id="calGrid" class="cal-grid" aria-label="Calendario mensile"></div>
+    <div id="calDayList" class="cal-list"></div>
+  </section>
+
+  <!-- VIEW: CLASSIFICA -->
+  <section id="viewRank" class="view">
+    <h2>Classifica</h2>
+    <div id="leader" class="leader"></div>
+    <details class="history" open>
+      <summary>Storico punteggi</summary>
+      <div id="historyList"></div>
+    </details>
+    <p class="muted">Regole: +10 in tempo, +5 in anticipo, +2 in ritardo, -5 malus/dì ignorato (overdue non completato).</p>
+  </section>
+
+  <!-- VIEW: IMPOSTAZIONI -->
+  <section id="viewSettings" class="view">
+    <h2>Impostazioni</h2>
+    <details open>
+      <summary>Utente attivo</summary>
+      <div class="grid" style="margin-top:10px">
+        <select id="activeUser"></select>
+        <button id="swapToActive" class="btn">Imposta attivo</button>
+      </div>
+    </details>
+    <details>
+      <summary>Gestione utenti</summary>
+      <div id="usersList" class="grid" style="margin-top:10px"></div>
+      <hr>
+      <div class="grid">
+        <input id="u-name" placeholder="Nome utente">
+        <select id="u-color"></select>
+        <label class="btn">Foto utente <input id="u-photo" type="file" accept="image/*" style="display:none"></label>
+        <button id="u-add" class="btn primary">Aggiungi utente</button>
+      </div>
+    </details>
+    <details>
+      <summary>Stanze</summary>
+      <div class="grid" id="roomsList" style="margin-top:10px"></div>
+      <hr>
+      <div class="grid">
+        <input id="r-name" placeholder="Nuova stanza">
+        <label class="btn">Foto stanza <input id="r-photo" type="file" accept="image/*" style="display:none"></label>
+        <button id="r-add" class="btn primary">Aggiungi stanza</button>
+      </div>
+    </details>
+    <details>
+      <summary>Aspetto</summary>
+      <div class="grid" style="margin-top:10px">
+        <div class="full">
+          <strong>Palette app</strong>
+          <div id="appPalettes" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px"></div>
+        </div>
+        <div class="full">
+          <strong>Sfondo sezione “Pulizie”</strong>
+          <label class="btn">Carica sfondo <input id="bgTasksFile" type="file" accept="image/*" style="display:none"></label>
+          <button id="bgTasksClear" class="btn">Rimuovi sfondo</button>
+        </div>
+      </div>
+    </details>
+    <details>
+      <summary>Notifiche &amp; Promemoria</summary>
+      <div class="grid" style="margin-top:10px">
+        <label class="field full">Ora promemoria (HH:MM)
+          <input id="remindAt" placeholder="09:00" value="09:00">
+        </label>
+        <label><input type="checkbox" id="resurface"> Riproponi non completate ogni giorno</label>
+        <button id="enableNotifs" class="btn">Abilita notifiche</button>
+      </div>
+    </details>
+    <details>
+      <summary>Dati &amp; Backup</summary>
+      <div class="grid-compact" style="margin-top:10px">
+        <button id="exportTasks" class="btn block">Esporta pulizie</button>
+        <label class="file-btn">Importa pulizie
+          <input type="file" id="importTasks" accept="application/json">
+        </label>
+        <button id="exportMyScore" class="btn block">Esporta classifica (utente attivo)</button>
+        <label class="file-btn">Importa classifica su utente attivo
+          <input type="file" id="importMyScore" accept="application/json">
+        </label>
+        <button id="backup" class="btn block">Backup completo</button>
+        <label class="file-btn">Ripristina backup completo
+          <input type="file" id="restoreFile" accept="application/json">
+        </label>
+        <button id="clearDone" class="btn block">Cancella completate</button>
+      </div>
+    </details>
+  </section>
+</main>
+
+<!-- Bottom Nav aggiornata -->
+<nav class="bottom-nav">
+  <button class="tabbtn active" data-tab="tasks">To Do</button>
+  <button class="tabbtn" data-tab="calendar">Calendario</button>
+  <button class="tabbtn" data-tab="rank">Classifica</button>
+  <button class="tabbtn" data-tab="settings">Impostazioni</button>
+</nav>
+
+<!-- Filters Drawer (responsive) -->
+<div id="filtersDrawer" class="drawer" aria-hidden="true">
+  <div class="scrim" id="filtersScrim"></div>
+  <div class="panel" role="dialog" aria-label="Filtri">
+    <h3>Filtri</h3>
+    <div class="grid">
+      <input id="f-q" placeholder="Cerca per nome/notes">
+      <label>Stanza
+        <select id="f-room"></select>
+      </label>
+      <label>Assegnatario
+        <select id="f-user"></select>
+      </label>
+      <label>Priorità
+        <select id="f-pri">
+          <option value="">(tutte)</option>
+          <option value="1">Alta</option>
+          <option value="2">Media</option>
+          <option value="3">Bassa</option>
+        </select>
+      </label>
+      <label>Stato
+        <select id="f-state">
+          <option value="">(tutti)</option>
+          <option value="future">Futuro</option>
+          <option value="due">In scadenza oggi</option>
+          <option value="over">Scaduto</option>
+          <option value="done">Completato</option>
+        </select>
+      </label>
+      <label>Completate oggi <input type="checkbox" id="f-done-today"></label>
+      <label>Non completate oggi <input type="checkbox" id="f-not-done-today"></label>
+      <label>Data da <input type="date" id="f-from"></label>
+      <label>Data a <input type="date" id="f-to"></label>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn" id="clearFilters">Pulisci</button>
+      <button class="btn primary" id="closeFilters">Applica</button>
+    </div>
+  </div>
+</div>
+
+<!-- Editor sheet fisso -->
+<div id="sheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
   <header>
-    <img id="appLogo" class="logo" alt="Logo">
-    <h1>Pulizie di Casa</h1>
-    <span class="user-pill" id="userPill">
-      <img id="avatar" class="avatar" alt="">
-      <strong id="who">Utente</strong>
-    </span>
+    <h3 id="sheetTitle" style="margin:0;flex:1">Nuova pulizia</h3>
+    <button id="sheetClose" class="btn">Chiudi</button>
   </header>
-
-  <main class="container">
-    <!-- VIEW: PULIZIE -->
-    <section id="viewTasks" class="view active" style="background-size:cover;background-position:center">
-      <div class="tabs">
-        <button class="tab active" data-scope="oggi">Oggi</button>
-        <button class="tab" data-scope="tutte">Tutte</button>
-      </div>
-
-      <div class="filters-bar">
-        <button class="btn" id="toggleFilters">Filtri</button>
-        <div class="chips" id="activeChips"></div>
-        <button class="btn" id="clearFilters" title="Pulisci filtri">Pulisci</button>
-      </div>
-
-      <details class="filter" id="filtersPanel">
-        <summary>Ricerca avanzata</summary>
-        <div class="grid" style="margin-top:8px">
-          <input id="f-q" placeholder="Cerca per nome/notes">
-          <label>Stanza
-            <select id="f-room"></select>
-          </label>
-          <label>Assegnatario
-            <select id="f-user"></select>
-          </label>
-          <label>Priorità
-            <select id="f-pri">
-              <option value="">(tutte)</option>
-              <option value="1">Alta</option>
-              <option value="2">Media</option>
-              <option value="3">Bassa</option>
-            </select>
-          </label>
-          <label>Stato
-            <select id="f-state">
-              <option value="">(tutti)</option>
-              <option value="future">Futuro</option>
-              <option value="due">In scadenza oggi</option>
-              <option value="over">Scaduto</option>
-              <option value="done">Completato</option>
-            </select>
-          </label>
-          <label>Completate oggi <input type="checkbox" id="f-done-today"></label>
-          <label>Non completate oggi <input type="checkbox" id="f-not-done-today"></label>
-          <label>Data da <input type="date" id="f-from"></label>
-          <label>Data a <input type="date" id="f-to"></label>
-        </div>
-      </details>
-
-      <ul id="list"></ul>
-      <div class="empty" id="empty" style="display:none">Niente da mostrare 🧽</div>
-
-      <!-- Editor sheet fisso -->
-      <div id="sheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
-        <header>
-          <h3 id="sheetTitle" style="margin:0;flex:1">Nuova pulizia</h3>
-          <button id="sheetClose" class="btn">Chiudi</button>
-        </header>
-        <div class="content">
-          <form id="taskForm" class="grid">
-            <input id="f-id" type="hidden">
-            <input id="f-title" class="field full" placeholder="Attività (es. Passare l'aspirapolvere)" required>
-            <select id="f-roomSel" class="field"></select>
-            <select id="f-priority" class="field">
-              <option value="1">Priorità alta</option>
-              <option value="2" selected>Priorità media</option>
-              <option value="3">Priorità bassa</option>
-            </select>
-            <label class="field full">Inizio (giorno e ora)
-              <input id="f-startAt" type="datetime-local">
-            </label>
-            <label class="field full">Assegnata a
-              <select id="f-assignee"></select>
-            </label>
-            <label class="field full">Ripetizione
-              <div class="grid">
-                <label><input id="f-rep-enabled" type="checkbox"> Attiva</label>
-                <div class="grid">
-                  <input id="f-rep-every" type="number" min="1" step="1" value="1">
-                  <select id="f-rep-unit"><option value="days">giorni</option><option value="weeks">settimane</option><option value="months">mesi</option></select>
-                </div>
-              </div>
-            </label>
-            <textarea id="f-notes" class="field full" placeholder="Note (opzionale)"></textarea>
-            <div class="full" style="display:flex; gap:10px; justify-content:flex-end;">
-              <button id="btnDelete" type="button" class="btn btn-danger" style="display:none">Elimina</button>
-              <button id="btnSave" class="btn primary" type="submit">Salva</button>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <!-- FAB -->
-      <button class="fab" id="fabAdd" aria-label="Aggiungi">+</button>
-    </section>
-
-    <!-- VIEW: CLASSIFICA -->
-    <section id="viewRank" class="view">
-      <h2>Classifica</h2>
-      <div id="leader" class="leader"></div>
-
-      <details class="history" open>
-        <summary>Storico punteggi</summary>
-        <div id="historyList"></div>
-      </details>
-
-      <p class="muted">Regole: +10 in tempo, +5 in anticipo, +2 in ritardo, -5 malus/dì ignorato (overdue non completato).</p>
-    </section>
-
-    <!-- VIEW: IMPOSTAZIONI -->
-    <section id="viewSettings" class="view">
-      <h2>Impostazioni</h2>
-
-      <details open>
-        <summary>Utente attivo</summary>
-        <div class="grid" style="margin-top:10px">
-          <select id="activeUser"></select>
-          <button id="swapToActive" class="btn">Imposta attivo</button>
-        </div>
-      </details>
-
-      <details>
-        <summary>Gestione utenti</summary>
-        <div id="usersList" class="grid" style="margin-top:10px"></div>
-        <hr>
+  <div class="content">
+    <form id="taskForm" class="grid">
+      <input id="f-id" type="hidden">
+      <input id="f-title" class="field full" placeholder="Attività (es. Passare l'aspirapolvere)" required>
+      <select id="f-roomSel" class="field"></select>
+      <select id="f-priority" class="field">
+        <option value="1">Priorità alta</option>
+        <option value="2" selected>Priorità media</option>
+        <option value="3">Priorità bassa</option>
+      </select>
+      <label class="field full">Inizio (giorno e ora)
+        <input id="f-startAt" type="datetime-local">
+      </label>
+      <label class="field full">Assegnata a
+        <select id="f-assignee"></select>
+      </label>
+      <label class="field full">Ripetizione
         <div class="grid">
-          <input id="u-name" placeholder="Nome utente">
-          <select id="u-color"></select>
-          <label class="btn">Foto utente <input id="u-photo" type="file" accept="image/*" style="display:none"></label>
-          <button id="u-add" class="btn primary">Aggiungi utente</button>
-        </div>
-      </details>
-
-      <details>
-        <summary>Stanze</summary>
-        <div class="grid" id="roomsList" style="margin-top:10px"></div>
-        <hr>
-        <div class="grid">
-          <input id="r-name" placeholder="Nuova stanza">
-          <label class="btn">Foto stanza <input id="r-photo" type="file" accept="image/*" style="display:none"></label>
-          <button id="r-add" class="btn primary">Aggiungi stanza</button>
-        </div>
-      </details>
-
-      <details>
-        <summary>Aspetto</summary>
-        <div class="grid" style="margin-top:10px">
-          <div class="full">
-            <strong>Palette app</strong>
-            <div id="appPalettes" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px"></div>
+          <label><input id="f-rep-enabled" type="checkbox"> Attiva</label>
+          <div class="grid">
+            <input id="f-rep-every" type="number" min="1" step="1" value="1">
+            <select id="f-rep-unit"><option value="days">giorni</option><option value="weeks">settimane</option><option value="months">mesi</option></select>
           </div>
-          <div class="full">
-            <strong>Sfondo sezione “Pulizie”</strong>
-            <label class="btn">Carica sfondo <input id="bgTasksFile" type="file" accept="image/*" style="display:none"></label>
-            <button id="bgTasksClear" class="btn">Rimuovi sfondo</button>
-          </div>
-          <div class="full small-note">Le palette riprendono gli esempi che mi hai inviato.</div>
         </div>
-      </details>
+      </label>
+      <textarea id="f-notes" class="field full" placeholder="Note (opzionale)"></textarea>
+      <div class="full" style="display:flex; gap:10px; justify-content:flex-end;">
+        <button id="btnDelete" type="button" class="btn btn-danger" style="display:none">Elimina</button>
+        <button id="btnSave" class="btn primary" type="submit">Salva</button>
+      </div>
+    </form>
+  </div>
+</div>
 
-      <details>
-        <summary>Notifiche &amp; Promemoria</summary>
-        <div class="grid" style="margin-top:10px">
-          <label class="field full">Ora promemoria (HH:MM)
-            <input id="remindAt" placeholder="09:00" value="09:00">
-          </label>
-          <label><input type="checkbox" id="resurface"> Riproponi non completate ogni giorno</label>
-          <button id="enableNotifs" class="btn">Abilita notifiche</button>
-        </div>
-      </details>
-
-      <details>
-        <summary>Dati &amp; Backup</summary>
-        <div class="grid-compact" style="margin-top:10px">
-          <!-- Pulizie -->
-          <button id="exportTasks" class="btn block">Esporta pulizie</button>
-          <label class="file-btn">Importa pulizie
-            <input type="file" id="importTasks" accept="application/json">
-          </label>
-
-          <!-- Classifica utente attivo -->
-          <button id="exportMyScore" class="btn block">Esporta classifica (utente attivo)</button>
-          <label class="file-btn">Importa classifica su utente attivo
-            <input type="file" id="importMyScore" accept="application/json">
-          </label>
-
-          <!-- Backup completo (comodità) -->
-          <button id="backup" class="btn block">Backup completo</button>
-          <label class="file-btn">Ripristina backup completo
-            <input type="file" id="restoreFile" accept="application/json">
-          </label>
-
-          <button id="clearDone" class="btn block">Cancella completate</button>
-        </div>
-        <div class="small-note">
-          Suggerimento: salva i file in “File” o inviali con AirDrop per tenerli al sicuro.
-        </div>
-      </details>
-    </section>
-  </main>
-
-  <!-- Bottom Nav -->
-  <nav class="bottom-nav">
-    <button class="tabbtn active" data-tab="tasks">Pulizie</button>
-    <button class="tabbtn" data-tab="rank">Classifica</button>
-    <button class="tabbtn" data-tab="settings">Impostazioni</button>
-  </nav>
-
-  <!-- Toast container -->
-  <div id="toastWrap" class="toast-wrap" aria-live="polite" aria-atomic="true"></div>
+<!-- Toast container -->
+<div id="toastWrap" class="toast-wrap" aria-live="polite" aria-atomic="true"></div>
 
 <script>
 /* ===== Stato & storage ===== */
-const DBKEY="pulizie-db-v7";
+const DBKEY="pulizie-db-v9";
 const nowISO=()=>new Date().toISOString();
 const todayYMD=()=>new Date().toISOString().slice(0,10);
 
-/* palette pastello 10 colori per utenti (dropdown) */
-const PASTELS=["#FF8FA3","#FFB3C1","#BDE0FE","#A0C4FF","#B9FBC0","#98F5E1","#FFD6A5","#FDFFB6","#E9B3FF","#C4F1BE"];
+/* Colori utente: nomi + hex (niente codici in UI) */
+const USER_COLORS=[
+  {name:"Rosa", hex:"#FF8FA3"},
+  {name:"Rosa Chiaro", hex:"#FFB3C1"},
+  {name:"Azzurro", hex:"#A0C4FF"},
+  {name:"Celeste", hex:"#BDE0FE"},
+  {name:"Verde Menta", hex:"#B9FBC0"},
+  {name:"Acqua", hex:"#98F5E1"},
+  {name:"Albiccocca", hex:"#FFD6A5"},
+  {name:"Giallo Chiaro", hex:"#FDFFB6"},
+  {name:"Lilla", hex:"#E9B3FF"},
+  {name:"Verde Salvia", hex:"#C4F1BE"}
+];
 
-/* Palette app (dagli esempi) */
+/* Palette app più scure e distinte */
 const APP_PALETTES=[
-  {name:"Green/Earth", brand:"#102820", brand2:"#4C6444", bg:"#CABA9C"},
-  {name:"Nude",        brand:"#E4C9B6", brand2:"#D7A49A", bg:"#F6EEE1"},
-  {name:"Pastello Soft",brand:"#FFE88A", brand2:"#FFB3A8", bg:"#F6F1FF"},
-  {name:"Acqueo",      brand:"#005F7B", brand2:"#04E4D8", bg:"#E6FFFB"},
-  {name:"Sage",        brand:"#6F8469", brand2:"#86AC8D", bg:"#F6EEE1"},
-  {name:"Rosso/Azzurro",brand:"#9D221F",brand2:"#86ACD5", bg:"#F6EEE1"}
+  {name:"Forest", brand:"#124332", brand2:"#2FBF71", bg:"#DDEEE7"},
+  {name:"Desert", brand:"#8A4B12", brand2:"#E0A33A", bg:"#F5E7CD"},
+  {name:"Coral", brand:"#9C1B31", brand2:"#FF6F61", bg:"#F9E1E0"},
+  {name:"Ocean", brand:"#0B4C75", brand2:"#15C2CE", bg:"#E2F6F8"},
+  {name:"Slate", brand:"#2B2D42", brand2:"#8D99AE", bg:"#E7EBF2"},
+  {name:"Sunset", brand:"#6C2BD9", brand2:"#FF7A00", bg:"#EFE6FF"}
 ];
 
 const defaults={
-  version:7,
+  version:9,
   users:[
     {id:"me", name:"Alberto", color:"#A0C4FF", photo:null},
     {id:"partner", name:"Giorgia", color:"#FF8FA3", photo:null}
@@ -399,7 +431,6 @@ const defaults={
   score:{},
   lastMalusDate:null
 };
-
 function migrate(d){
   if(!d.settings?.rooms){ d.settings={...(d.settings||{}), rooms:defaults.settings.rooms}; }
   if(!d.score) d.score={};
@@ -454,15 +485,15 @@ function applyPalette(p){
   }
 }
 
-/* Header, logo e overlay su sfondo */
+/* Header, logo e overlay su sfondo (usa icon-192 come default) */
 function renderHeader(){
   const u=activeUser();
   whoEl.textContent=u?.name||"Utente";
   if(u?.photo){ avatarEl.src=u.photo; avatarEl.style.background="transparent"; }
   else { avatarEl.removeAttribute("src"); avatarEl.style.background=u?.color||"#ccc"; }
-
-  if(state.appearance.logo){ logoEl.src=state.appearance.logo; logoEl.style.background="transparent"; }
-
+  if(state.appearance.logo){ logoEl.src=state.appearance.logo; }
+  else{ logoEl.src="icons/icon-192.png"; }
+  logoEl.style.background="transparent";
   const viewTasks=document.getElementById("viewTasks");
   if(state.appearance.bgTasks){
     viewTasks.style.backgroundImage = `url(${state.appearance.bgTasks})`;
@@ -482,25 +513,83 @@ function parseLocal(dt){ return dt ? new Date(dt) : null; }
 function addInterval(d,n,u){ const nd=new Date(d); if(u==="days") nd.setDate(nd.getDate()+n); else if(u==="weeks") nd.setDate(nd.getDate()+7*n); else nd.setMonth(nd.getMonth()+n); return nd; }
 function nextOccurrenceFromStart(start,every,unit,ref){ if(!start) return null; let cur=new Date(start); if(!every||every<1) return cur; if(cur>=ref) return cur; let guard=0; while(cur<ref&&guard++<800){ cur=addInterval(cur,every,unit);} return cur;}
 function isSameDay(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
-function statusForTask(t){ const now=new Date(); const start=parseLocal(t.startAt); if(!start) return { next:null, code: t.done?"done":"future" }; const next=t.repeat?.enabled ? nextOccurrenceFromStart(start, t.repeat.every, t.repeat.unit, now) : start; if(t.done) return { next, code:"done" }; if(!next) return { next:null, code:"future" }; if(isSameDay(next, now)) return { next, code:"due" }; if(next < now) return { next, code:"over" }; return { next, code:"future" }; }
-function humanNext(s){ if(!s?.next) return "--"; const d=s.next, dd=String(d.getDate()).padStart(2,"0"), mm=String(d.getMonth()+1).padStart(2,"0"), yyyy=d.getFullYear(); const hh=String(d.getHours()).padStart(2,"0"), mi=String(d.getMinutes()).padStart(2,"0"); return `${yyyy}-${mm}-${dd} ${hh}:${mi}`; }
+function statusForTask(t){
+  const now=new Date();
+  const start=parseLocal(t.startAt);
+  if(!start) return { next:null, code: t.done?"done":"future" };
+  const next=t.repeat?.enabled ? nextOccurrenceFromStart(start, t.repeat.every, t.repeat.unit, now) : start;
+  if(t.done) return { next, code:"done" };
+  if(!next) return { next:null, code:"future" };
+  if(isSameDay(next, now)) return { next, code:"due" };
+  if(next < now) return { next, code:"over" };
+  return { next, code:"future" };
+}
+function humanNext(s){
+  if(!s?.next) return "--";
+  const d=s.next, dd=String(d.getDate()).padStart(2,"0"), mm=String(d.getMonth()+1).padStart(2,"0"), yyyy=d.getFullYear();
+  const hh=String(d.getHours()).padStart(2,"0"), mi=String(d.getMinutes()).padStart(2,"0");
+  return `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
+}
 function ddmm(d){ return `${String(d.getDate()).padStart(2,"0")}-${String(d.getMonth()+1).padStart(2,"0")}`; }
 
-/* ===== TABS & FILTRI ===== */
+/* ===== Ricorrenze per Calendario ===== */
+function occursOnDay(task, day){
+  // Considera solo la data (ignora l'orario)
+  const start = parseLocal(task.startAt);
+  if(!start) return false;
+  const sDay = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+  const dDay = new Date(day.getFullYear(), day.getMonth(), day.getDate());
+
+  if(!task.repeat?.enabled){
+    return isSameDay(sDay, dDay);
+  }
+  const every = Math.max(1, parseInt(task.repeat.every||"1",10));
+  const unit = task.repeat.unit;
+
+  if(dDay < sDay) return false;
+
+  if(unit==="days"){
+    const diff = Math.round((dDay - sDay)/86400000);
+    return diff % every === 0;
+  }else if(unit==="weeks"){
+    // allinea anche al giorno della settimana di partenza
+    const startDow = sDay.getDay(); // 0..6
+    if(dDay.getDay() !== startDow) return false;
+    const diffWeeks = Math.round((dDay - sDay)/(86400000*7));
+    return diffWeeks % every === 0;
+  }else{ // months
+    const diffMonths = (dDay.getFullYear()*12 + dDay.getMonth()) - (sDay.getFullYear()*12 + sDay.getMonth());
+    if(diffMonths % every !== 0) return false;
+    // ancora controlla il giorno del mese: se il mese ha meno giorni, "slitta" all'ultimo giorno
+    const target = new Date(sDay);
+    target.setMonth(sDay.getMonth() + diffMonths);
+    const targetDay = new Date(target.getFullYear(), target.getMonth(), sDay.getDate());
+    // Se il mese corrente non ha quel giorno, JavaScript roll-over porta al mese successivo, quindi clamp manuale:
+    const lastDay = new Date(target.getFullYear(), target.getMonth()+1, 0).getDate();
+    const dayNum = Math.min(sDay.getDate(), lastDay);
+    const clamp = new Date(target.getFullYear(), target.getMonth(), dayNum);
+    return isSameDay(clamp, dDay);
+  }
+}
+
+/* ===== TABS & FILTRI (drawer) ===== */
 let scope="oggi";
-document.querySelectorAll(".tab").forEach(b=> b.addEventListener("click", ()=>{ document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active")); b.classList.add("active"); scope=b.dataset.scope; renderTasks(); }));
-
-const filtersPanel=byId("filtersPanel"), toggleFilters=byId("toggleFilters"), clearFilters=byId("clearFilters"), chipsEl=byId("activeChips");
-toggleFilters.addEventListener("click", ()=>{ filtersPanel.open = !filtersPanel.open; });
-clearFilters.addEventListener("click", ()=>{ Object.values(filterInputs).forEach(el=>{ if(el.type==="checkbox") el.checked=false; else el.value=""; }); renderChips(); renderTasks(); showToast("Filtri puliti"); });
-
+document.querySelectorAll(".tab").forEach(b=> b.addEventListener("click", ()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active");
+  scope=b.dataset.scope;
+  renderTasks();
+}));
+const drawer=byId("filtersDrawer"), scrim=byId("filtersScrim"), closeFilters=byId("closeFilters"), toggleFilters=byId("toggleFilters"), chipsEl=byId("activeChips");
+toggleFilters.addEventListener("click", ()=> drawer.classList.add("open"));
+scrim.addEventListener("click", ()=> drawer.classList.remove("open"));
+closeFilters.addEventListener("click", ()=>{ drawer.classList.remove("open"); renderChips(); renderTasks(); });
 const filterInputs={
   q: byId("f-q"), room: byId("f-room"), user: byId("f-user"), pri: byId("f-pri"),
   state: byId("f-state"), doneToday: byId("f-done-today"), notDoneToday: byId("f-not-done-today"),
   from: byId("f-from"), to: byId("f-to")
 };
-Object.values(filterInputs).forEach(el=> el.addEventListener("input", ()=>{ renderChips(); renderTasks(); }));
-
+Object.values(filterInputs).forEach(el=> el.addEventListener("input", ()=>{ renderChips(); }));
 function renderRoomFilters(){ filterInputs.room.innerHTML=`<option value="">(tutte)</option>` + state.settings.rooms.map(r=>`<option value="${r.name}">${r.name}</option>`).join(""); }
 function renderUserFilters(){ filterInputs.user.innerHTML=`<option value="">(tutti)</option>` + state.users.map(u=>`<option value="${u.name}">${u.name}</option>`).join(""); }
 function renderChips(){
@@ -544,7 +633,6 @@ function applyFilters(list){
   const qv=q.value.trim().toLowerCase();
   const fromD=from.value? new Date(from.value+"T00:00:00"):null;
   const toD=to.value? new Date(to.value+"T23:59:59"):null;
-
   return list.filter(t=>{
     const s=statusForTask(t);
     if(qv && !(t.title.toLowerCase().includes(qv) || (t.notes||"").toLowerCase().includes(qv))) return false;
@@ -552,12 +640,10 @@ function applyFilters(list){
     if(user.value && t.assignee!==user.value) return false;
     if(pri.value && String(t.priority)!==String(pri.value)) return false;
     if(state.value && s.code!==state.value) return false;
-
     const last = t.lastDone ? new Date(t.lastDone) : null;
     const isDoneToday = last ? isSameDay(last,new Date()) : false;
     if(doneToday.checked && !isDoneToday) return false;
     if(notDoneToday.checked && isDoneToday) return false;
-
     if(fromD || toD){
       if(!s.next) return false;
       if(fromD && s.next < fromD) return false;
@@ -575,11 +661,9 @@ function renderTasks(){
     return (a.done-b.done)||(a.priority-b.priority)||(na-nb);
   });
   if(!tasks.length){ emptyEl.style.display="block"; return; }
-
   for(const t of tasks){
     const s=statusForTask(t);
     const li=document.createElement("li"); li.className=`task ${s.code}`; li.dataset.id=t.id;
-
     const head=document.createElement("div"); head.className="task-head";
     const chk=document.createElement("div"); chk.className="chk";
     const cb=document.createElement("input"); cb.type="checkbox"; cb.checked=!!t.done;
@@ -588,21 +672,17 @@ function renderTasks(){
       t.done=cb.checked;
       t.lastDone = t.done ? nowISO() : null;
       if(t.done){ scoreCompletion(t, new Date()); showToast("✅ Pulizia completata"); }
-      save(); renderTasks(); renderLeader(); renderHistory();
+      save(); renderTasks(); renderLeader(); renderHistory(); renderCalendar(); // aggiorna calendario
     });
     chk.appendChild(cb);
-
     const headMain=document.createElement("div"); headMain.className="head-main";
     const title=document.createElement("div"); title.className="title"; title.textContent=t.title;
     const notesLine=document.createElement("div"); notesLine.className="notes-line"; notesLine.textContent = t.notes ? t.notes : (t.room? t.room : "");
     headMain.appendChild(title); headMain.appendChild(notesLine);
-
     const dateBadge=document.createElement("div"); dateBadge.className="date-badge"; dateBadge.textContent = s.next ? ddmm(s.next) : "--";
     const chev=document.createElement("div"); chev.className="chev"; chev.innerHTML=`<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-width="2" d="M9 6l6 6-6 6"/></svg>`;
-
     head.appendChild(chk); head.appendChild(headMain); head.appendChild(dateBadge); head.appendChild(chev);
     li.appendChild(head);
-
     const details=document.createElement("div"); details.className="task-details";
     const meta=document.createElement("div"); meta.className="badges";
     if(t.room) meta.innerHTML+=`<span>${t.room}</span>`;
@@ -610,16 +690,12 @@ function renderTasks(){
     if(t.assignee){ const cls=(t.assignee.toLowerCase()===(activeUser().name||"").toLowerCase())?"assignee-me":"assignee-partner"; meta.innerHTML+=`<span class="${cls}">A: ${t.assignee}</span>`; }
     if(t.repeat?.enabled) meta.innerHTML+=`<span>Ogni ${t.repeat.every} ${t.repeat.unit==="days"?"giorni":t.repeat.unit==="weeks"?"settimane":"mesi"}</span>`; else meta.innerHTML+=`<span>Singolo</span>`;
     details.appendChild(meta);
-
     const nextDiv=document.createElement("div"); nextDiv.style.marginTop="6px"; nextDiv.innerHTML=`Prossima occorrenza: <strong>${humanNext(s)}</strong>`; details.appendChild(nextDiv);
-
     const actions=document.createElement("div"); actions.className="actions";
     const editBtn=document.createElement("button"); editBtn.className="btn"; editBtn.textContent="Modifica"; editBtn.addEventListener("click", ev=>{ ev.stopPropagation(); openEditor(t); });
     actions.appendChild(editBtn);
     details.appendChild(actions);
-
     head.addEventListener("click", ()=> li.classList.toggle("expanded"));
-
     listEl.appendChild(li);
   }
 }
@@ -631,6 +707,7 @@ const fId=byId("f-id"), fTitle=byId("f-title"), fRoomSel=byId("f-roomSel"), fPri
       fStartAt=byId("f-startAt"), fAssignee=byId("f-assignee"), fRepEnabled=byId("f-rep-enabled"),
       fRepEvery=byId("f-rep-every"), fRepUnit=byId("f-rep-unit"), fNotes=byId("f-notes"),
       btnSave=byId("btnSave"), btnDelete=byId("btnDelete");
+
 function renderRoomSelect(){ fRoomSel.innerHTML = `<option value="">(Nessuna)</option>` + state.settings.rooms.map(r=>`<option>${r.name}</option>`).join(""); }
 function renderAssigneeSelects(){ const opts = state.users.map(u=>`<option value="${u.name}">${u.name}</option>`).join(""); fAssignee.innerHTML = `<option value="">(nessuno)</option>`+opts; }
 function openEditor(task=null){
@@ -647,16 +724,15 @@ function openEditor(task=null){
   }
 }
 function closeEditor(){ sheet.style.display="none"; }
-byId("fabAdd").addEventListener("click", ()=>openEditor());
 sheetClose.addEventListener("click", closeEditor);
-btnDelete.addEventListener("click", ()=>{ if(!fId.value) return; if(confirm("Eliminare questa pulizia?")){ state.tasks = state.tasks.filter(t=>t.id!==fId.value); save(); closeEditor(); renderTasks(); showToast("🗑️ Pulizia eliminata"); }});
+btnDelete.addEventListener("click", ()=>{ if(!fId.value) return; if(confirm("Eliminare questa pulizia?")){ state.tasks = state.tasks.filter(t=>t.id!==fId.value); save(); closeEditor(); renderTasks(); renderCalendar(); showToast("🗑️ Pulizia eliminata"); }});
 form.addEventListener("submit", (e)=>{
   e.preventDefault();
   const data={ id: fId.value || crypto.randomUUID(), title: fTitle.value.trim(), room: fRoomSel.value.trim(), priority: parseInt(fPriority.value||"2",10), assignee: fAssignee.value.trim(), startAt: fStartAt.value || null, repeat:{ enabled:fRepEnabled.checked, every:parseInt(fRepEvery.value||"1",10), unit:fRepUnit.value }, notes: fNotes.value.trim(), createdAt: fId.value ? undefined : nowISO(), lastDone: null, done:false };
   const idx=state.tasks.findIndex(t=>t.id===data.id);
   if(idx===-1){ state.tasks.push(data); showToast("➕ Pulizia aggiunta"); }
   else { state.tasks[idx]={...state.tasks[idx], ...data}; showToast("💾 Modifiche salvate"); }
-  save(); closeEditor(); renderTasks();
+  save(); closeEditor(); renderTasks(); renderCalendar();
 });
 
 /* ===== CLASSIFICA & PUNTEGGI ===== */
@@ -707,20 +783,27 @@ function renderHistory(){
     const sign = ev.delta>=0 ? "+" : "";
     const cls = ev.delta>=0 ? "pos" : "neg";
     return `<div class="event">
-      <span class="delta ${cls}">${sign}${ev.delta}</span>
-      <strong>${ev.userName}</strong>
-      <span>— ${ev.reason}</span>
-      ${ev.taskTitle? `<em> (${ev.taskTitle})</em>`:""}
-      <span style="margin-left:auto">${ds}</span>
-    </div>`;
+<span class="delta ${cls}">${sign}${ev.delta}</span>
+<strong>${ev.userName}</strong>
+<span>— ${ev.reason}</span>
+${ev.taskTitle? `<em> (${ev.taskTitle})</em>`:""}
+<span style="margin-left:auto">${ds}</span>
+</div>`;
   }).join("") || "<div class='muted'>Ancora nessun evento.</div>";
 }
 
-/* ===== IMPOSTAZIONI: UTENTI (dropdown colori) ===== */
+/* ===== IMPOSTAZIONI: UTENTI ===== */
 const usersList=byId("usersList"), activeUserSel=byId("activeUser"), swapToActive=byId("swapToActive");
 const uName=byId("u-name"), uColor=byId("u-color"), uPhoto=byId("u-photo"), uAdd=byId("u-add");
-function renderPaletteSelect(sel, selected){
-  sel.innerHTML = PASTELS.map(c=>`<option value="${c}" ${c===selected?"selected":""} style="background:${c};color:#000">${c}</option>`).join("");
+function renderColorOptions(sel, currentHex){
+  sel.innerHTML = USER_COLORS.map(c=>{
+    const selected = c.hex===currentHex ? "selected" : "";
+    return `<option value="${c.name}" data-hex="${c.hex}" ${selected}>${c.name}</option>`;
+  }).join("");
+}
+function colorHexFromName(name){
+  const f = USER_COLORS.find(c=>c.name===name);
+  return f ? f.hex : USER_COLORS[0].hex;
 }
 function renderUsersList(){
   activeUserSel.innerHTML = state.users.map(u=>`<option value="${u.id}" ${u.id===state.activeUserId?"selected":""}>${u.name}</option>`).join("");
@@ -729,8 +812,12 @@ function renderUsersList(){
     const wrap=document.createElement("div"); wrap.className="row"; wrap.style.gap="12px";
     const img=document.createElement("img"); img.className="avatar"; img.style.width="32px"; img.style.height="32px"; if(u.photo) img.src=u.photo; else img.style.background=u.color;
     const name=document.createElement("div"); name.textContent=u.name;
-    const colorSel=document.createElement("select"); renderPaletteSelect(colorSel, u.color);
-    colorSel.addEventListener("change", ()=>{ u.color=colorSel.value; save(); renderUsersList(); renderHeader(); renderLeader(); showToast("🎨 Colore utente aggiornato"); });
+    const colorSel=document.createElement("select"); colorSel.style.minWidth="160px";
+    renderColorOptions(colorSel, u.color);
+    colorSel.addEventListener("change", ()=>{
+      const hex = colorHexFromName(colorSel.value);
+      u.color = hex; save(); renderUsersList(); renderHeader(); renderLeader(); showToast("🎨 Colore utente aggiornato");
+    });
     const fileLbl=document.createElement("label"); fileLbl.className="btn"; fileLbl.textContent="Foto"; const file=document.createElement("input"); file.type="file"; file.accept="image/*"; file.style.display="none"; fileLbl.appendChild(file);
     const del=document.createElement("button"); del.className="btn"; del.textContent="Rimuovi";
     wrap.appendChild(img); wrap.appendChild(name); wrap.appendChild(colorSel); wrap.appendChild(fileLbl); wrap.appendChild(del);
@@ -739,13 +826,14 @@ function renderUsersList(){
     del.addEventListener("click", ()=>{ if(state.users.length<=1) return alert("Deve esserci almeno un utente."); if(!confirm("Rimuovere utente?")) return; state.users=state.users.filter(x=>x.id!==u.id); if(state.activeUserId===u.id) state.activeUserId=state.users[0].id; save(); renderHeader(); renderUsersList(); renderAssigneeSelects(); renderLeader(); renderHistory(); showToast("Utente rimosso"); });
   });
 }
-renderPaletteSelect(uColor, PASTELS[0]);
+renderColorOptions(uColor, USER_COLORS[2].hex);
 uAdd.addEventListener("click", async ()=>{
   const name=uName.value.trim(); if(!name) return;
-  const color=uColor.value||PASTELS[0];
+  const selectedHex = colorHexFromName(uColor.value);
   let photo=null; if(uPhoto.files[0]) photo=await fileToDataURL(uPhoto.files[0]);
-  state.users.push({id:crypto.randomUUID(), name, color, photo});
+  state.users.push({id:crypto.randomUUID(), name, color:selectedHex, photo});
   uName.value=""; uPhoto.value="";
+  renderColorOptions(uColor, USER_COLORS[2].hex);
   save(); renderUsersList(); renderAssigneeSelects(); renderLeader(); showToast("👤 Utente aggiunto");
 });
 swapToActive.addEventListener("click", ()=>{ setActiveUser(activeUserSel.value); showToast("Utente attivo cambiato"); });
@@ -763,10 +851,10 @@ function renderRooms(){
     item.appendChild(img); item.appendChild(name); item.appendChild(fileLbl); item.appendChild(del);
     roomsList.appendChild(item);
     file.addEventListener("change", async e=>{ const f=e.target.files[0]; if(!f) return; const data=await fileToDataURL(f); state.settings.rooms[i].photo=data; save(); renderRooms(); showToast("📷 Foto stanza aggiornata"); });
-    del.addEventListener("click", ()=>{ if(!confirm("Rimuovere stanza?")) return; const name=state.settings.rooms[i].name; state.settings.rooms.splice(i,1); state.tasks.forEach(t=>{ if(t.room===name) t.room=""; }); save(); renderRooms(); renderRoomSelect(); renderTasks(); showToast("Stanza rimossa"); });
+    del.addEventListener("click", ()=>{ if(!confirm("Rimuovere stanza?")) return; const name=state.settings.rooms[i].name; state.settings.rooms.splice(i,1); state.tasks.forEach(t=>{ if(t.room===name) t.room=""; }); save(); renderRooms(); renderRoomSelect(); renderTasks(); renderCalendar(); showToast("Stanza rimossa"); });
   });
 }
-rAdd.addEventListener("click", async ()=>{ const name=rName.value.trim(); if(!name) return; let photo=null; if(rPhoto.files[0]) photo=await fileToDataURL(rPhoto.files[0]); state.settings.rooms.push({name, photo}); rName.value=""; rPhoto.value=""; save(); renderRooms(); renderRoomSelect(); renderTasks(); showToast("🏠 Stanza aggiunta"); });
+rAdd.addEventListener("click", async ()=>{ const name=rName.value.trim(); if(!name) return; let photo=null; if(rPhoto.files[0]) photo=await fileToDataURL(rPhoto.files[0]); state.settings.rooms.push({name, photo}); rName.value=""; rPhoto.value=""; save(); renderRooms(); renderRoomSelect(); renderTasks(); renderCalendar(); showToast("🏠 Stanza aggiunta"); });
 
 /* ===== Aspetto ===== */
 const appPalettesEl=byId("appPalettes"), bgTasksFile=byId("bgTasksFile"), bgTasksClear=byId("bgTasksClear");
@@ -774,9 +862,8 @@ function renderAppPalettes(){
   appPalettesEl.innerHTML="";
   APP_PALETTES.forEach(p=>{
     const b=document.createElement("button");
-    b.className="btn";
+    b.className="btn"; b.style.color="#fff"; b.textContent=p.name;
     b.style.background=`linear-gradient(135deg, ${p.brand}, ${p.brand2})`;
-    b.style.color="#fff"; b.textContent=p.name;
     b.addEventListener("click", ()=>{ state.appearance.palette=p; save(); applyPalette(p); renderHeader(); showToast("🎨 Palette applicata"); });
     appPalettesEl.appendChild(b);
   });
@@ -797,7 +884,6 @@ const exportTasksBtn=byId("exportTasks");
 const importTasksInput=byId("importTasks");
 const exportMyScoreBtn=byId("exportMyScore");
 const importMyScoreInput=byId("importMyScore");
-
 exportTasksBtn.addEventListener("click", ()=>{
   const payload = JSON.stringify({version: state.version, tasks: state.tasks}, null, 2);
   const file=new File([payload],"pulizie-tasks-"+todayYMD()+".json",{type:"application/json"});
@@ -808,12 +894,11 @@ importTasksInput.addEventListener("change", async (e)=>{
   const f=e.target.files[0]; if(!f) return;
   try{
     const data=JSON.parse(await f.text());
-    if(Array.isArray(data.tasks)){ state.tasks=data.tasks; save(); renderTasks(); showToast("✅ Pulizie importate"); }
+    if(Array.isArray(data.tasks)){ state.tasks=data.tasks; save(); renderTasks(); renderCalendar(); showToast("✅ Pulizie importate"); }
     else alert("File non valido (manca 'tasks').");
   }catch(err){ alert("Import non riuscito: "+err); }
   e.target.value="";
 });
-
 exportMyScoreBtn.addEventListener("click", ()=>{
   const uid=state.activeUserId, name = (state.users.find(u=>u.id===uid)||{}).name || "utente";
   const payload = JSON.stringify({userId: uid, userName: name, score: state.score[uid]||0, history: state.history.filter(h=>h.userId===uid)}, null, 2);
@@ -852,17 +937,126 @@ restoreFile.addEventListener("change", async (e)=>{
     e.target.value = "";
   }
 });
+byId("clearDone").addEventListener("click", ()=>{ state.tasks=state.tasks.filter(t=>!t.done); save(); renderTasks(); renderCalendar(); showToast("🧹 Completate cancellate"); });
 
-byId("clearDone").addEventListener("click", ()=>{ state.tasks=state.tasks.filter(t=>!t.done); save(); renderTasks(); showToast("🧹 Completate cancellate"); });
-
-/* ===== Bottom Nav ===== */
-const viewTasks=byId("viewTasks"), viewRank=byId("viewRank"), viewSettings=byId("viewSettings");
-document.querySelectorAll(".tabbtn").forEach(b=> b.addEventListener("click", ()=>{ document.querySelectorAll(".tabbtn").forEach(x=>x.classList.remove("active")); b.classList.add("active"); const tab=b.dataset.tab; [viewTasks,viewRank,viewSettings].forEach(v=>v.classList.remove("active")); if(tab==="tasks"){ viewTasks.classList.add("active"); } if(tab==="rank"){ viewRank.classList.add("active"); renderLeader(); renderHistory(); } if(tab==="settings"){ viewSettings.classList.add("active"); } window.scrollTo({top:0,behavior:"smooth"}); }));
+/* ===== Bottom Nav (con Calendario) ===== */
+const viewTasks=byId("viewTasks"), viewCalendar=byId("viewCalendar"), viewRank=byId("viewRank"), viewSettings=byId("viewSettings");
+document.querySelectorAll(".tabbtn").forEach(b=> b.addEventListener("click", ()=>{
+  document.querySelectorAll(".tabbtn").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active");
+  const tab=b.dataset.tab;
+  [viewTasks,viewCalendar,viewRank,viewSettings].forEach(v=>v.classList.remove("active"));
+  if(tab==="tasks"){ viewTasks.classList.add("active"); byId("appTitle").textContent="Pulizie di Casa"; }
+  if(tab==="calendar"){ viewCalendar.classList.add("active"); byId("appTitle").textContent="Calendario Pulizie"; renderCalendar(); }
+  if(tab==="rank"){ viewRank.classList.add("active"); byId("appTitle").textContent="Classifica"; renderLeader(); renderHistory(); }
+  if(tab==="settings"){ viewSettings.classList.add("active"); byId("appTitle").textContent="Impostazioni"; }
+  window.scrollTo({top:0,behavior:"smooth"});
+}));
 
 /* Helpers */
 function fileToDataURL(file){ return new Promise(res=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.readAsDataURL(file); }); }
 
-/* Boot */
+/* ===== Calendario: rendering ===== */
+const calGrid=byId("calGrid"), calTitle=byId("calTitle"), calDayList=byId("calDayList");
+const calPrev=byId("calPrev"), calNext=byId("calNext"), calToday=byId("calToday"), calAdd=byId("calAdd");
+
+let calRef = new Date(); // data mostrata (mese)
+function setCalTo(year, month){ calRef = new Date(year, month, 1); }
+function monthLabel(d){
+  return d.toLocaleDateString('it-IT', { month:'long', year:'numeric' });
+}
+function daysInMonth(y,m){ return new Date(y, m+1, 0).getDate(); }
+
+function renderCalendar(){
+  // intestazione
+  calTitle.textContent = monthLabel(calRef).replace(/^\w/, c=>c.toUpperCase());
+  // griglia
+  const y = calRef.getFullYear(), m = calRef.getMonth();
+  const firstDow = new Date(y, m, 1).getDay(); // 0..6 (0=Dom)
+  const startOffset = (firstDow+6)%7; // trasforma per avere Lun=0
+  const totalDays = daysInMonth(y,m);
+  const prevMonthDays = daysInMonth(y, m-1);
+
+  const labels = ["Lun","Mar","Mer","Gio","Ven","Sab","Dom"];
+  calGrid.innerHTML = labels.map(w=>`<div class="cal-dow">${w}</div>`).join("");
+
+  // Costruisci 42 celle (6 settimane) per stabilità layout
+  const cells = [];
+  for(let i=0;i<42;i++){
+    const dayNum = i - startOffset + 1;
+    let d, muted=false;
+    if(dayNum < 1){ // mese precedente
+      const n = prevMonthDays + dayNum;
+      d = new Date(y, m-1, n);
+      muted = true;
+    } else if(dayNum > totalDays){ // mese successivo
+      const n = dayNum - totalDays;
+      d = new Date(y, m+1, n);
+      muted = true;
+    } else {
+      d = new Date(y, m, dayNum);
+    }
+
+    // conteggio attività in quel giorno
+    const count = state.tasks.filter(t=>{
+      if(t.done) return false; // in calendario mostriamo cose da fare
+      return occursOnDay(t, d);
+    }).length;
+
+    const cell=document.createElement("div");
+    cell.className="cal-cell"+(muted?" muted":"");
+    cell.setAttribute("data-date", d.toISOString().slice(0,10));
+    cell.innerHTML = `<div class="cal-daynum">${d.getDate()}</div>${count? `<div class="cal-badge">${count}</div>`:""}`;
+    cell.addEventListener("click", ()=> renderCalendarDayList(d));
+    cells.push(cell);
+  }
+  cells.forEach(c=>calGrid.appendChild(c));
+
+  // lista per il giorno di oggi nel mese corrente (qualora visibile)
+  const today = new Date();
+  if(today.getFullYear()===y && today.getMonth()===m){
+    renderCalendarDayList(today);
+  }else{
+    calDayList.innerHTML = `<div class="cal-empty">Tocca un giorno per vedere i dettagli</div>`;
+  }
+}
+function renderCalendarDayList(d){
+  const items = state.tasks.filter(t=> occursOnDay(t, d));
+  const title = d.toLocaleDateString('it-IT', { weekday:'long', day:'2-digit', month:'2-digit' });
+  if(!items.length){
+    calDayList.innerHTML = `<div class="cal-empty"><strong>${title}</strong><br>Nessuna pulizia prevista</div>`;
+    return;
+  }
+  const list = items.sort((a,b)=> (a.priority-b.priority) || a.title.localeCompare(b.title))
+    .map(t=>{
+      const p = t.priority===1?"Alta":t.priority===2?"Media":"Bassa";
+      const who = t.assignee ? ` • A: ${t.assignee}` : "";
+      const room = t.room ? ` • ${t.room}` : "";
+      return `<li class="task future" style="list-style:none; margin:8px 0; padding:10px; border-radius:10px; border:1px solid var(--border);">
+  <div style="display:flex; gap:8px; align-items:center;">
+    <div class="head-main" style="flex:1; min-width:0;">
+      <div class="title">${t.title}</div>
+      <div class="notes-line">${p}${who}${room}</div>
+    </div>
+    <button class="btn" data-edit="${t.id}">Modifica</button>
+  </div>
+</li>`;
+    }).join("");
+  calDayList.innerHTML = `<div style="margin-top:12px;"><strong>${title}</strong></div><ul style="padding:0;margin:6px 0 0 0;">${list}</ul>`;
+  // wire “Modifica”
+  calDayList.querySelectorAll('button[data-edit]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const t = state.tasks.find(x=>x.id===b.getAttribute('data-edit'));
+      if(t) openEditor(t);
+    });
+  });
+}
+calPrev.addEventListener("click", ()=>{ setCalTo(calRef.getFullYear(), calRef.getMonth()-1); renderCalendar(); });
+calNext.addEventListener("click", ()=>{ setCalTo(calRef.getFullYear(), calRef.getMonth()+1); renderCalendar(); });
+calToday.addEventListener("click", ()=>{ const n=new Date(); setCalTo(n.getFullYear(), n.getMonth()); renderCalendar(); });
+calAdd.addEventListener("click", ()=> openEditor());
+
+/* ===== Boot ===== */
 function boot(){
   applyPalette(state.appearance.palette||APP_PALETTES[3]);
   renderHeader();
@@ -872,7 +1066,9 @@ function boot(){
   renderRoomFilters(); renderUserFilters(); renderChips();
   renderTasks(); renderLeader(); renderHistory();
   applyDailyMalus();
-
+  // Inizializza calendario al mese corrente
+  const n=new Date(); setCalTo(n.getFullYear(), n.getMonth());
+  // SW
   if("serviceWorker" in navigator){ addEventListener("load", ()=> navigator.serviceWorker.register("./service-worker.js").catch(()=>{}) ); }
 }
 boot();
