@@ -718,10 +718,19 @@ function renderTasks(){
     const s=statusForTask(t);
     const li=document.createElement("li"); li.className=`task ${s.code}`; li.dataset.id=t.id;
 
+    // Accessibilità + interazioni su tutta la card
+    li.setAttribute("tabindex", "0");
+    li.setAttribute("role", "button");
+    li.setAttribute("aria-expanded", "false");
+    function toggleDetails(){
+      const expanded = li.classList.toggle("expanded");
+      li.setAttribute("aria-expanded", expanded ? "true" : "false");
+    }
+
     const head=document.createElement("div"); head.className="task-head";
     const chk=document.createElement("div"); chk.className="chk";
     const cb=document.createElement("input"); cb.type="checkbox"; cb.checked=!!t.done;
-    cb.addEventListener("click", ev=>ev.stopPropagation()); // non toggla il dettaglio
+    cb.addEventListener("click", ev=>ev.stopPropagation()); // non apre/chiude la card
     cb.addEventListener("change", ()=>{
       const userName = t.assignee || activeUser().name;
       const prev = t.lastScore || 0;
@@ -783,8 +792,19 @@ function renderTasks(){
     actions.appendChild(editBtn);
     details.appendChild(actions);
 
-    // Apri/chiudi dettagli cliccando ovunque sulla card
-    li.addEventListener("click", ()=> li.classList.toggle("expanded"));
+    // Apri/chiudi dettagli cliccando ovunque sulla card (tranne controlli interattivi)
+    li.addEventListener("click", (ev)=>{
+      const tag = (ev.target.tagName || "").toLowerCase();
+      if (tag === "input" || tag === "button" || tag === "select" || tag === "textarea" || ev.target.closest("button, input, select, textarea")) return;
+      toggleDetails();
+    });
+    // Supporto tastiera
+    li.addEventListener("keydown", (ev)=>{
+      if(ev.key === "Enter" || ev.key === " "){
+        ev.preventDefault();
+        toggleDetails();
+      }
+    });
 
     listEl.appendChild(li);
   }
@@ -951,7 +971,7 @@ function renderColorOptions(sel, currentHex){
 }
 function colorHexFromName(name){
   const f = USER_COLORS.find(c=>c.name===name);
-  return f ? f.hex : USER_COLORS[0].hex;
+  return f ? c.hex : USER_COLORS[0].hex;
 }
 function renderUsersList(){
   activeUserSel.innerHTML = state.users.map(u=>`<option value="${u.id}" ${u.id===state.activeUserId?"selected":""}>${u.name}</option>`).join("");
@@ -963,7 +983,7 @@ function renderUsersList(){
     const colorSel=document.createElement("select"); colorSel.style.minWidth="160px";
     renderColorOptions(colorSel, u.color);
     colorSel.addEventListener("change", ()=>{
-      const hex = colorHexFromName(colorSel.value);
+      const hex = USER_COLORS.find(c=>c.name===colorSel.value)?.hex || USER_COLORS[0].hex;
       u.color = hex; save(); renderUsersList(); renderHeader(); renderLeader(); showToast("🎨 Colore utente aggiornato");
     });
     const fileLbl=document.createElement("label"); fileLbl.className="btn"; fileLbl.textContent="Foto"; const file=document.createElement("input"); file.type="file"; file.accept="image/*"; file.style.display="none"; fileLbl.appendChild(file);
@@ -977,7 +997,7 @@ function renderUsersList(){
 renderColorOptions(uColor, USER_COLORS[2].hex);
 uAdd.addEventListener("click", async ()=>{
   const name=uName.value.trim(); if(!name) return;
-  const selectedHex = colorHexFromName(uColor.value);
+  const selectedHex = USER_COLORS.find(c=>c.name===uColor.value)?.hex || USER_COLORS[2].hex;
   let photo=null; if(uPhoto.files[0]) photo=await fileToDataURL(uPhoto.files[0]);
   state.users.push({id:crypto.randomUUID(), name, color:selectedHex, photo});
   uName.value=""; uPhoto.value="";
