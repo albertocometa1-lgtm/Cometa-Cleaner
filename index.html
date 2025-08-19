@@ -113,8 +113,40 @@ li.task.due .date-badge, li.task.over .date-badge, li.task.done .date-badge{ bor
 
 /* Forms */
 .grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px } .grid .full{ grid-column:1/-1 }
+.form-grid{ display:grid; gap:10px; grid-template-columns:1fr; }
+.form-grid .full{ grid-column:1/-1; }
+@media(min-width:600px){ .form-grid{ grid-template-columns:1fr 1fr; } }
 input, select, textarea{ padding:12px; border:1px solid var(--border); border-radius:12px; background:var(--card); color:var(--text); font-size:var(--fs-2) }
 textarea{ min-height:80px; resize:vertical }
+.toggle{
+  appearance:none;
+  width:44px;
+  height:24px;
+  background:var(--border);
+  border-radius:12px;
+  position:relative;
+  cursor:pointer;
+  border:none;
+}
+.toggle:focus-visible{outline:2px solid var(--brand); outline-offset:2px;}
+.toggle::before{
+  content:"";
+  position:absolute;
+  top:2px; left:2px;
+  width:20px; height:20px;
+  background:#fff;
+  border-radius:50%;
+  transition:transform .2s;
+}
+.toggle:checked{ background:var(--brand); }
+.toggle:checked::before{ transform:translateX(20px); }
+.weekdays{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+.weekdays label{ display:flex; align-items:center; gap:4px; }
+.photo-zone{ border:2px dashed var(--border); border-radius:12px; padding:20px; text-align:center; cursor:pointer; }
+.photo-zone.hover{ background:#f3f7ff; }
+.photo-preview{ position:relative; margin-top:10px; display:none; }
+.photo-preview img{ width:100px; height:100px; object-fit:cover; border-radius:12px; border:1px solid var(--border); }
+.photo-preview button{ position:absolute; top:4px; right:4px; }
 
 .filter-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;}
 .filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
@@ -489,38 +521,52 @@ textarea{ min-height:80px; resize:vertical }
     <button id="sheetClose" class="btn">Chiudi</button>
   </header>
   <div class="content">
-    <form id="taskForm" class="grid">
+    <form id="taskForm" class="form-grid">
       <input id="f-id" type="hidden">
-      <input id="f-title" class="field full" placeholder="Attività (es. Passare l'aspirapolvere)" required>
-      <select id="f-roomSel" class="field"></select>
-      <select id="f-priority" class="field">
-        <option value="1">Priorità alta</option>
-        <option value="2" selected>Priorità media</option>
-        <option value="3">Priorità bassa</option>
-      </select>
-      <label class="field full">Inizio (giorno e ora)
-        <input id="f-startAt" type="datetime-local">
+      <label class="field full">Nome pulizia
+        <input id="f-title" placeholder="Es. Passare l'aspirapolvere" required>
       </label>
-      <label class="field full">Assegnata a
-        <select id="f-assignee"></select>
+      <label class="field full">Descrizione
+        <textarea id="f-notes" rows="3" placeholder="Dettagli (opzionale)"></textarea>
+      </label>
+      <label class="field full">Data inizio
+        <input id="f-startAt" type="datetime-local" required>
       </label>
       <label class="field full">Ripetizione
-        <div class="grid">
-          <label><input id="f-rep-enabled" type="checkbox"> Attiva</label>
-          <div class="grid">
+        <input id="f-rep-enabled" class="toggle" type="checkbox">
+      </label>
+      <div id="repFields" class="full" style="display:none">
+        <div class="form-grid">
+          <label>Intervallo
             <input id="f-rep-every" type="number" min="1" step="1" value="1">
-            <select id="f-rep-unit"><option value="days">giorni</option><option value="weeks">settimane</option><option value="months">mesi</option></select>
-          </div>
+          </label>
+          <label>Unità
+            <select id="f-rep-unit">
+              <option value="days">Giorni</option>
+              <option value="weeks">Settimane</option>
+              <option value="months">Mesi</option>
+              <option value="hours">Ore</option>
+            </select>
+          </label>
         </div>
+        <div id="repWeekdays" class="weekdays" style="display:none;">
+          <label><input type="checkbox" value="0">L</label>
+          <label><input type="checkbox" value="1">M</label>
+          <label><input type="checkbox" value="2">M</label>
+          <label><input type="checkbox" value="3">G</label>
+          <label><input type="checkbox" value="4">V</label>
+          <label><input type="checkbox" value="5">S</label>
+          <label><input type="checkbox" value="6">D</label>
+        </div>
+      </div>
+      <label class="field full">Foto
+        <div id="photoZone" class="photo-zone">Trascina o clicca per caricare</div>
+        <div id="photoPreview" class="photo-preview">
+          <img id="photoImg" alt="Anteprima">
+          <button type="button" class="btn" id="photoRemove">Rimuovi</button>
+        </div>
+        <input id="f-photo" type="file" accept="image/png, image/jpeg" hidden>
       </label>
-      <textarea id="f-notes" class="field full" placeholder="Note (opzionale)"></textarea>
-
-      <!-- FOTO nuove pulizie -->
-      <label class="field full">Foto (max 4)
-        <input id="f-photos" type="file" accept="image/*" multiple>
-        <small class="small-note">Le immagini sono salvate localmente e mostrate nei dettagli.</small>
-      </label>
-
       <div class="full" style="display:flex; gap:10px; justify-content:flex-end;">
         <button id="btnDelete" type="button" class="btn btn-danger" style="display:none">Elimina</button>
         <button id="btnSave" class="btn primary" type="submit">Salva</button>
@@ -549,7 +595,7 @@ textarea{ min-height:80px; resize:vertical }
 
 <script>
 /* ===== Stato & storage ===== */
-const DBKEY="pulizie-db-v9";
+const DBKEY="pulizie-db-v10";
 const nowISO=()=>new Date().toISOString();
 const todayYMD=()=>new Date().toISOString().slice(0,10);
 
@@ -578,7 +624,7 @@ const APP_PALETTES=[
 ];
 
 const defaults={
-  version:9,
+  version:10,
   users:[
     {id:"me", name:"Alberto", color:"#A0C4FF", photo:null},
     {id:"partner", name:"Giorgia", color:"#FF8FA3", photo:null}
@@ -710,18 +756,51 @@ function parseLocal(dt){ return dt ? new Date(dt) : null; }
 function addInterval(d,n,u){
   const nd=new Date(d);
   const step = Number(n);
-  if(u==="days") nd.setDate(nd.getDate()+step);
+  if(u==="hours") nd.setHours(nd.getHours()+step);
+  else if(u==="days") nd.setDate(nd.getDate()+step);
   else if(u==="weeks") nd.setDate(nd.getDate()+7*step);
   else nd.setMonth(nd.getMonth()+step);
   return nd;
 }
-function nextOccurrenceFromStart(start,every,unit,ref){ if(!start) return null; let cur=new Date(start); if(!every||every<1) return cur; if(cur>=ref) return cur; let guard=0; while(cur<ref&&guard++<800){ cur=addInterval(cur,every,unit);} return cur;}
+function nextOccurrenceFromStart(start,every,unit,ref,weekdays=[]){
+  if(!start) return null;
+  let cur=new Date(start);
+  if(!every||every<1) every=1;
+  if(unit==="weeks" && weekdays.length){
+    const baseDow=(cur.getDay()+6)%7;
+    const baseWeekStart=new Date(cur); baseWeekStart.setDate(cur.getDate()-baseDow);
+    let weekStart=new Date(baseWeekStart);
+    let guard=0;
+    while(guard++<800){
+      const diffWeeks=Math.round((weekStart-baseWeekStart)/604800000);
+      if(diffWeeks%every===0){
+        for(const wd of weekdays){
+          const cand=new Date(weekStart);
+          cand.setDate(weekStart.getDate()+wd);
+          cand.setHours(cur.getHours(),cur.getMinutes(),0,0);
+          if(cand>=cur && cand>=ref) return cand;
+        }
+      }
+      weekStart.setDate(weekStart.getDate()+7);
+    }
+    return null;
+  }
+  if(unit==="hours"){
+    let guard=0;
+    while(cur<ref && guard++<800){ cur=addInterval(cur,every,"hours"); }
+    return cur;
+  }
+  if(cur>=ref) return cur;
+  let guard=0;
+  while(cur<ref && guard++<800){ cur=addInterval(cur,every,unit); }
+  return cur;
+}
 function isSameDay(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
 function statusForTask(t){
   const now=new Date();
   const start=parseLocal(t.startAt);
   if(!start) return { next:null, code: t.done?"done":"future" };
-  const next=t.repeat?.enabled ? nextOccurrenceFromStart(start, t.repeat.every, t.repeat.unit, now) : start;
+  const next=t.repeat?.enabled ? nextOccurrenceFromStart(start, t.repeat.every, t.repeat.unit, now, t.repeat.weekdays||[]) : start;
   if(t.done) return { next, code:"done" };
   if(!next) return { next:null, code:"future" };
   if(isSameDay(next, now)) return { next, code:"due" };
@@ -738,9 +817,19 @@ function occursOnDay(task, day){
 
   if(!task.repeat?.enabled){
     return isSameDay(sDay, dDay);
-    }
+  }
   const every = Math.max(1, parseInt(task.repeat.every||"1",10));
   const unit = task.repeat.unit;
+
+  if(unit==="hours"){
+    const dayStart=new Date(dDay); dayStart.setHours(0,0,0,0);
+    const dayEnd=new Date(dayStart); dayEnd.setDate(dayEnd.getDate()+1);
+    let cur=new Date(start);
+    let guard=0;
+    if(cur>=dayEnd) return false;
+    while(cur<dayStart && guard++<800){ cur=addInterval(cur,every,"hours"); }
+    return cur>=dayStart && cur<dayEnd;
+  }
 
   if(dDay < sDay) return false;
 
@@ -748,9 +837,13 @@ function occursOnDay(task, day){
     const diff = Math.round((dDay - sDay)/86400000);
     return diff % every === 0;
   }else if(unit==="weeks"){
-    const startDow = sDay.getDay();
-    if(dDay.getDay() !== startDow) return false;
-    const diffWeeks = Math.round((dDay - sDay)/(86400000*7));
+    const wds = task.repeat.weekdays || [];
+    const dDow = (dDay.getDay()+6)%7;
+    if(wds.length && !wds.includes(dDow)) return false;
+    const startDow = (sDay.getDay()+6)%7;
+    const startWeekStart=new Date(sDay); startWeekStart.setDate(sDay.getDate()-startDow);
+    const dWeekStart=new Date(dDay); dWeekStart.setDate(dDay.getDate()-dDow);
+    const diffWeeks = Math.round((dWeekStart - startWeekStart)/(86400000*7));
     return diffWeeks % every === 0;
   }else{
     const diffMonths = (dDay.getFullYear()*12 + dDay.getMonth()) - (sDay.getFullYear()*12 + sDay.getMonth());
@@ -813,7 +906,7 @@ function baseTasksForScope(){
       if(state.settings.resurfaceUnfinished){
         const start=parseLocal(t.startAt); if(!start) return false;
         if(t.repeat?.enabled){
-          const prev=nextOccurrenceFromStart(start, t.repeat.every, t.repeat.unit, new Date(todayStart - 1));
+          const prev=nextOccurrenceFromStart(start, t.repeat.every, t.repeat.unit, new Date(todayStart - 1), t.repeat.weekdays||[]);
           if(prev && prev < todayStart) return true;
         } else if(start < todayStart){ return true; }
       }
@@ -829,7 +922,7 @@ function applyFilters(list){
   const toD=to.value? new Date(to.value+"T23:59:59"):null;
   return list.filter(t=>{
     const s=statusForTask(t);
-    if(qv && !(t.title.toLowerCase().includes(qv) || (t.notes||"").toLowerCase().includes(qv))) return false;
+    if(qv && !((t.title||t.name||"").toLowerCase().includes(qv) || (t.notes||"").toLowerCase().includes(qv))) return false;
     if(room.value && t.room!==room.value) return false;
     if(user.value && t.assignee!==user.value) return false;
     if(pri.value && String(t.priority)!==String(pri.value)) return false;
@@ -891,8 +984,8 @@ function renderTasks(){
     chk.appendChild(cb);
 
     const headMain=document.createElement("div"); headMain.className="head-main";
-    const title=document.createElement("div"); title.className="title"; title.textContent=t.title;
-    const notesLine=document.createElement("div"); notesLine.className="notes-line"; notesLine.textContent = t.notes ? t.notes : (t.room? t.room : "");
+    const title=document.createElement("div"); title.className="title"; title.textContent=t.title || t.name;
+    const notesLine=document.createElement("div"); notesLine.className="notes-line"; const photoTag=t.photo?" 📷":""; notesLine.textContent = (t.notes||"")+photoTag;
     headMain.appendChild(title); headMain.appendChild(notesLine);
     const dateBadge=document.createElement("div"); dateBadge.className="date-badge"; dateBadge.textContent = s.next ? fmtDMY(s.next) : "--";
     const chev=document.createElement("div"); chev.className="chev"; chev.innerHTML=`<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-width="2" d="M9 6l6 6-6 6"/></svg>`;
@@ -920,51 +1013,107 @@ function renderTasks(){
 /* ===== EDITOR ===== */
 const sheet=byId("sheet"), sheetTitle=byId("sheetTitle"), sheetClose=byId("sheetClose");
 const form=byId("taskForm");
-const fId=byId("f-id"), fTitle=byId("f-title"), fRoomSel=byId("f-roomSel"), fPriority=byId("f-priority"),
-      fStartAt=byId("f-startAt"), fAssignee=byId("f-assignee"), fRepEnabled=byId("f-rep-enabled"),
-      fRepEvery=byId("f-rep-every"), fRepUnit=byId("f-rep-unit"), fNotes=byId("f-notes"),
+const fId=byId("f-id"), fTitle=byId("f-title"), fStartAt=byId("f-startAt"),
+      fRepEnabled=byId("f-rep-enabled"), fRepEvery=byId("f-rep-every"), fRepUnit=byId("f-rep-unit"),
+      fNotes=byId("f-notes"), repFields=byId("repFields"), repWeekdays=byId("repWeekdays"),
+      photoInput=byId("f-photo"), photoZone=byId("photoZone"), photoPreview=byId("photoPreview"),
+      photoImg=byId("photoImg"), photoRemove=byId("photoRemove"),
+      fRoomSel=byId("f-roomSel"), fAssignee=byId("f-assignee"),
       btnSave=byId("btnSave"), btnDelete=byId("btnDelete");
 const taskView=byId("taskView"), tvTitle=byId("tvTitle"), tvClose=byId("tvClose"),
       tvMeta=byId("tvMeta"), tvNotes=byId("tvNotes"), tvPhotos=byId("tvPhotos"),
       tvNext=byId("tvNext"), tvActions=byId("tvActions");
+let photoData=null;
 
-function renderRoomSelect(){ fRoomSel.innerHTML = `<option value="">(Nessuna)</option>` + state.settings.rooms.map(r=>`<option>${r.name}</option>`).join(""); }
-function renderAssigneeSelects(){ const opts = state.users.map(u=>`<option value="${u.name}">${u.name}</option>`).join(""); fAssignee.innerHTML = `<option value="">(nessuno)</option>`+opts; }
+function renderRoomSelect(){ if(!fRoomSel) return; fRoomSel.innerHTML = `<option value="">(Nessuna)</option>` + state.settings.rooms.map(r=>`<option>${r.name}</option>`).join(""); }
+function renderAssigneeSelects(){ if(!fAssignee) return; const opts = state.users.map(u=>`<option value="${u.name}">${u.name}</option>`).join(""); fAssignee.innerHTML = `<option value="">(nessuno)</option>`+opts; }
+
+if(fNotes){
+  fNotes.addEventListener('input', ()=>{ fNotes.style.height='auto'; fNotes.style.height=fNotes.scrollHeight+'px'; });
+}
+fRepEnabled.addEventListener('change', ()=>{
+  repFields.style.display = fRepEnabled.checked ? 'block' : 'none';
+  if(!fRepEnabled.checked){
+    fRepEvery.value = 1; fRepUnit.value = 'days';
+    repWeekdays.style.display='none';
+    repWeekdays.querySelectorAll('input').forEach(cb=>cb.checked=false);
+  }
+});
+fRepUnit.addEventListener('change', ()=>{
+  repWeekdays.style.display = fRepUnit.value==='weeks' ? 'flex' : 'none';
+});
+function getSelectedWeekdays(){
+  return Array.from(repWeekdays.querySelectorAll('input:checked')).map(cb=>parseInt(cb.value,10));
+}
+photoZone.addEventListener('click', ()=> photoInput.click());
+photoZone.addEventListener('dragover', e=>{ e.preventDefault(); photoZone.classList.add('hover'); });
+photoZone.addEventListener('dragleave', ()=> photoZone.classList.remove('hover'));
+photoZone.addEventListener('drop', e=>{ e.preventDefault(); photoZone.classList.remove('hover'); handlePhotoFile(e.dataTransfer.files[0]); });
+photoInput.addEventListener('change', ()=> handlePhotoFile(photoInput.files[0]));
+photoRemove.addEventListener('click', ()=>{ photoData=null; photoPreview.style.display='none'; photoInput.value=''; });
+function handlePhotoFile(file){
+  if(!file) return;
+  if(!/image\/(jpeg|png)/.test(file.type)){ alert('Solo immagini JPG/PNG'); return; }
+  if(file.size > 5*1024*1024){ alert('Max 5MB'); return; }
+  const r=new FileReader();
+  r.onload=()=>{ photoData=r.result; photoImg.src=photoData; photoPreview.style.display='block'; };
+  r.readAsDataURL(file);
+}
 function openEditor(task=null){
   sheet.style.display="block";
   if(task){
     sheetTitle.textContent="Modifica pulizia";
-    fId.value=task.id; fTitle.value=task.title||""; fRoomSel.value=task.room||""; fPriority.value=String(task.priority||2);
-    fStartAt.value=task.startAt||""; fAssignee.value=task.assignee||"";
-    fRepEnabled.checked=!!task.repeat?.enabled; fRepEvery.value=task.repeat?.every||1; fRepUnit.value=task.repeat?.unit||"days";
-    fNotes.value=task.notes||""; btnDelete.style.display="inline-flex";
-    const photosInput = byId("f-photos"); if(photosInput) photosInput.value="";
+    fId.value=task.id;
+    fTitle.value=task.title||task.name||"";
+    fNotes.value=task.notes||task.description||"";
+    fStartAt.value=task.startAt||task.start_at||new Date().toISOString().slice(0,16);
+    fRepEnabled.checked=!!task.repeat?.enabled;
+    fRepEvery.value=task.repeat?.every||1;
+    fRepUnit.value=task.repeat?.unit||"days";
+    repFields.style.display = fRepEnabled.checked ? "block" : "none";
+    repWeekdays.style.display = (fRepUnit.value==="weeks") ? "flex" : "none";
+    const wds = task.repeat?.weekdays || [];
+    repWeekdays.querySelectorAll('input').forEach(cb=>{ cb.checked = wds.includes(parseInt(cb.value,10)); });
+    photoData = task.photo || null;
+    if(photoData){
+      photoImg.src=photoData; photoPreview.style.display="block";
+    }else{ photoPreview.style.display="none"; photoInput.value=""; }
+    btnDelete.style.display="inline-flex";
   }else{
     sheetTitle.textContent="Nuova pulizia";
-    fId.value=""; form.reset(); fRepEnabled.checked=false; fRepEvery.value=1; fRepUnit.value="days"; btnDelete.style.display="none";
-    const photosInput = byId("f-photos"); if(photosInput) photosInput.value="";
+    fId.value="";
+    fTitle.value=""; fNotes.value="";
+    fStartAt.value=new Date().toISOString().slice(0,16);
+    fRepEnabled.checked=false; fRepEvery.value=1; fRepUnit.value="days";
+    repFields.style.display="none"; repWeekdays.style.display="none";
+    repWeekdays.querySelectorAll('input').forEach(cb=>cb.checked=false);
+    photoData=null; photoInput.value=""; photoPreview.style.display="none";
+    btnDelete.style.display="none";
   }
 }
 function closeEditor(){ sheet.style.display="none"; }
 sheetClose.addEventListener("click", closeEditor);
 
 function openTaskView(task){
-  tvTitle.textContent = task.title;
+  tvTitle.textContent = task.title || task.name;
   tvMeta.innerHTML = "";
-  if(task.room) tvMeta.innerHTML += `<span>${task.room}</span>`;
-  tvMeta.innerHTML += `<span>${task.priority===1?"Alta":task.priority===2?"Media":"Bassa"}</span>`;
-  if(task.assignee){
-    const cls = (task.assignee.toLowerCase()===(activeUser().name||"").toLowerCase()) ? "assignee-me" : "assignee-partner";
-    tvMeta.innerHTML += `<span class="${cls}">A: ${task.assignee}</span>`;
+  if(task.repeat?.enabled){
+    let unitLabel = task.repeat.unit==="days"?"giorni":task.repeat.unit==="weeks"?"settimane":task.repeat.unit==="months"?"mesi":"ore";
+    let extra = "";
+    if(task.repeat.unit==="weeks" && task.repeat.weekdays && task.repeat.weekdays.length){
+      const labs=["L","M","M","G","V","S","D"];
+      extra = ` (${task.repeat.weekdays.map(i=>labs[i]).join(",")})`;
+    }
+    tvMeta.innerHTML += `<span>Ogni ${task.repeat.every} ${unitLabel}${extra}</span>`;
+  }else{
+    tvMeta.innerHTML += `<span>Singolo</span>`;
   }
-  if(task.repeat?.enabled) tvMeta.innerHTML += `<span>Ogni ${task.repeat.every} ${task.repeat.unit==="days"?"giorni":task.repeat.unit==="weeks"?"settimane":"mesi"}</span>`;
-  else tvMeta.innerHTML += `<span>Singolo</span>`;
-  tvNotes.textContent = task.notes || "";
+  tvNotes.textContent = task.notes || task.description || "";
   tvPhotos.innerHTML = "";
-  if(task.photos && task.photos.length){
-    task.photos.forEach(src=>{
-      const im=document.createElement("img"); im.src=src; tvPhotos.appendChild(im);
-    });
+  if(task.photo){
+    const im=document.createElement("img"); im.src=task.photo; tvPhotos.appendChild(im);
+  }else if(task.photos && task.photos.length){
+    task.photos.forEach(src=>{ const im=document.createElement("img"); im.src=src; tvPhotos.appendChild(im); });
   }
   const s = statusForTask(task);
   tvNext.innerHTML = `Prossima occorrenza: <strong>${s.next? fmtDMYHM(s.next) : "--"}</strong>`;
@@ -997,31 +1146,25 @@ btnDelete.addEventListener("click", ()=>{
 
 /* Foto helpers */
 function fileToDataURL(file){ return new Promise(res=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.readAsDataURL(file); }); }
-async function filesToDataURLs(fileList, limit=4){
-  const arr = Array.from(fileList||[]).slice(0,limit);
-  const out = [];
-  for(const f of arr){ out.push(await fileToDataURL(f)); }
-  return out;
-}
 
-form.addEventListener("submit", async (e)=>{
+form.addEventListener("submit", (e)=>{
   e.preventDefault();
-  const photosInput = byId("f-photos");
-  const existing = fId.value ? (state.tasks.find(t=>t.id===fId.value)?.photos || []) : [];
-  const added = photosInput.files && photosInput.files.length ? await filesToDataURLs(photosInput.files, 4) : [];
-  const photos = added.length ? added : existing;
-
   const prevTask = state.tasks.find(t=>t.id===fId.value);
   const data={
     id: fId.value || crypto.randomUUID(),
     title: fTitle.value.trim(),
-    room: fRoomSel.value.trim(),
-    priority: parseInt(fPriority.value||"2",10),
-    assignee: fAssignee.value.trim(),
+    room: prevTask?.room || "",
+    priority: prevTask?.priority || 2,
+    assignee: prevTask?.assignee || "",
     startAt: fStartAt.value || null,
-    repeat:{ enabled:fRepEnabled.checked, every:parseInt(fRepEvery.value||"1",10), unit:fRepUnit.value },
+    repeat:{
+      enabled:fRepEnabled.checked,
+      every:fRepEnabled.checked? parseInt(fRepEvery.value||"1",10) : 1,
+      unit:fRepEnabled.checked? fRepUnit.value : "days",
+      weekdays:fRepEnabled.checked && fRepUnit.value==="weeks" ? getSelectedWeekdays() : []
+    },
     notes: fNotes.value.trim(),
-    photos,
+    photo: photoData,
     createdAt: fId.value ? prevTask?.createdAt : nowISO(),
     lastDone: fId.value ? (prevTask?.lastDone || null) : null,
     lastScore: fId.value ? (prevTask?.lastScore || 0) : 0,
@@ -1032,7 +1175,7 @@ form.addEventListener("submit", async (e)=>{
   if(idx===-1){ state.tasks.push(data); showToast("➕ Pulizia aggiunta"); }
   else { state.tasks[idx]={...state.tasks[idx], ...data}; showToast("💾 Modifiche salvate"); }
 
-  photosInput.value="";
+  photoInput.value=""; photoPreview.style.display='none'; photoData=null;
   save(); closeEditor(); renderTasks(); renderCalendar();
 });
 
@@ -1326,17 +1469,15 @@ function renderCalendarDayList(d){
     calDayList.innerHTML = `<div class="cal-empty"><strong>${title}</strong><br>Nessuna pulizia prevista</div>`;
     return;
   }
-  const list = items.sort((a,b)=> (a.priority-b.priority) || a.title.localeCompare(b.title))
+  const list = items.sort((a,b)=> (a.priority-b.priority) || (a.title||"").localeCompare(b.title||""))
     .map(t=>{
-      const p = t.priority===1?"Alta":t.priority===2?"Media":"Bassa";
-      const who = t.assignee ? ` • A: ${t.assignee}` : "";
-      const room = t.room ? ` • ${t.room}` : "";
-      const hasPhotos = t.photos && t.photos.length ? ` • 📷${t.photos.length}` : "";
+      const desc = t.notes ? ` • ${t.notes}` : "";
+      const hasPhotos = t.photo ? ' • 📷1' : '';
       return `<li class="task future" style="list-style:none; margin:8px 0; padding:10px; border-radius:10px; border:1px solid var(--border);">
   <div style="display:flex; gap:8px; align-items:center;">
     <div class="head-main" style="flex:1; min-width:0;">
-      <div class="title">${t.title}</div>
-      <div class="notes-line">${p}${who}${room}${hasPhotos}</div>
+      <div class="title">${t.title||t.name}</div>
+      <div class="notes-line">${desc}${hasPhotos}</div>
     </div>
     <button class="btn" data-edit="${t.id}">Modifica</button>
   </div>
