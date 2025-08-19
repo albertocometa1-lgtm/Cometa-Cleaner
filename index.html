@@ -106,6 +106,7 @@ li.task.due .date-badge, li.task.over .date-badge, li.task.done .date-badge{ bor
 .btn:focus-visible{ outline:2px solid var(--brand); outline-offset:2px; }
 .btn.primary{ background:var(--brand); color:#fff; border-color:var(--brand) }
 .btn-danger{ background:#E5484D; color:#fff; border-color:#E5484D }
+.btn.icon{ padding:8px; width:40px; min-height:40px; display:flex; align-items:center; justify-content:center; }
 .empty{ padding:24px; text-align:center; color:var(--text); opacity:.9; font-size:var(--fs-2) }
 
 /* Forms */
@@ -248,6 +249,7 @@ textarea{ min-height:80px; resize:vertical }
 </head>
 <body>
 <header>
+  <button id="hardRefreshBtn" class="btn icon" aria-label="Aggiorna">⟳</button>
   <img id="appLogo" class="logo" alt="Logo">
   <h1 id="appTitle">Pulizie di Casa</h1>
   <span class="user-pill" id="userPill">
@@ -556,18 +558,19 @@ function relLum({r,g,b}){ const s=[r,g,b].map(v=>{ v/=255; return v<=0.03928? v/
 function byId(id){ return document.getElementById(id); }
 const logoEl=byId("appLogo");
 const avatarEl=byId("avatar"), whoEl=byId("who");
-const refreshBtn = byId("refreshBtn");
-if(refreshBtn){
-  refreshBtn.addEventListener("click", () => {
-    const clearCaches = "caches" in window
-      ? caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))))
-      : Promise.resolve();
-    const unregisterSW = "serviceWorker" in navigator
-      ? navigator.serviceWorker.getRegistrations().then(regs => Promise.all(regs.map(r => r.unregister())))
-      : Promise.resolve();
-    Promise.all([clearCaches, unregisterSW]).finally(() => location.reload(true));
-  });
+function hardRefresh(){
+  const clearCaches = "caches" in window
+    ? caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))))
+    : Promise.resolve();
+  const unregisterSW = "serviceWorker" in navigator
+    ? navigator.serviceWorker.getRegistrations().then(regs => Promise.all(regs.map(r => r.unregister())))
+    : Promise.resolve();
+  Promise.all([clearCaches, unregisterSW]).finally(() => location.reload(true));
 }
+const refreshBtn = byId("refreshBtn");
+if(refreshBtn){ refreshBtn.addEventListener("click", hardRefresh); }
+const hardRefreshBtn = byId("hardRefreshBtn");
+if(hardRefreshBtn){ hardRefreshBtn.addEventListener("click", hardRefresh); }
 function activeUser(){ return state.users.find(u=>u.id===state.activeUserId) || state.users[0]; }
 function setActiveUser(id){ state.activeUserId=id; save(); renderHeader(); renderAssigneeSelects(); renderUsersList(); renderLeader(); renderHistory(); }
 
