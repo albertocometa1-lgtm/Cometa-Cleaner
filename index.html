@@ -141,8 +141,17 @@ textarea{ min-height:80px; resize:vertical }
 .delta.pos{ color:#117733 } .delta.neg{ color:#B00020 }
 
 /* Dati & Backup mobile */
-.grid-compact{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px; }
-@media (max-width:480px){ .grid-compact{ grid-template-columns:1fr; } }
+.grid-compact{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+.grid-compact > .btn,
+.grid-compact > .file-btn{
+  width:100%;
+  aspect-ratio:1/1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  overflow:hidden;
+}
 .btn.block{ width:100%; }
 .file-btn{
   display:inline-flex; align-items:center; justify-content:center; gap:8px;
