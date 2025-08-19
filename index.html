@@ -34,6 +34,7 @@
 *{box-sizing:border-box}
 img{max-width:100%;height:auto;}
 html,body{
+codex/improve-full-screen-mode-for-pwa-l9vpxf
   overscroll-behavior:none;
   overscroll-behavior-y:none;
 }
@@ -44,10 +45,13 @@ body{
   background:var(--bg);
   color:var(--text);
   line-height:1.45;
+codex/improve-full-screen-mode-for-pwa-l9vpxf
+
 }
 html{
   scroll-padding-top:calc(56px + env(safe-area-inset-top));
   scroll-padding-bottom:calc(var(--bottom-nav-h) + env(safe-area-inset-bottom));
+codex/improve-full-screen-mode-for-pwa-l9vpxf
 }
 header{
   position:sticky; top:0; z-index:30;
@@ -123,7 +127,9 @@ li.task.due .date-badge, li.task.over .date-badge, li.task.done .date-badge{ bor
 .empty{ padding:24px; text-align:center; color:var(--text); opacity:.9; font-size:var(--fs-2) }
 
 /* Forms */
-.grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px } .grid .full{ grid-column:1/-1 }
+.grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px }
+.grid .full{ grid-column:1/-1 }
+.add-row{ margin-top:10px; padding-top:10px; border-top:1px solid var(--border); }
   codex/update-app-ui-with-pastel-themes
 input, select, textarea{ padding:12px; border:1px solid var(--border); border-radius:8px; background:var(--card); color:var(--text); font-size:var(--fs-2) }
 textarea{ min-height:80px; resize:vertical }
@@ -398,8 +404,7 @@ textarea{ min-height:80px; resize:vertical }
       <details>
         <summary>Gestione utenti</summary>
         <div id="usersList" class="grid" style="margin-top:10px"></div>
-        <hr>
-        <div class="grid">
+        <div class="grid add-row">
           <input id="u-name" placeholder="Nome utente">
           <select id="u-color"></select>
           <label class="btn">Foto utente <input id="u-photo" type="file" accept="image/*" style="display:none"></label>
@@ -409,8 +414,7 @@ textarea{ min-height:80px; resize:vertical }
       <details>
         <summary>Stanze</summary>
         <div class="grid" id="roomsList" style="margin-top:10px"></div>
-        <hr>
-        <div class="grid">
+        <div class="grid add-row">
           <input id="r-name" placeholder="Nuova stanza">
           <label class="btn">Foto stanza <input id="r-photo" type="file" accept="image/*" style="display:none"></label>
           <button id="r-add" class="btn primary">Aggiungi stanza</button>
@@ -1529,6 +1533,7 @@ function setVH(){
 }
 function updateBodyScroll(){
   const vh = window.visualViewport ? visualViewport.height : window.innerHeight;
+codex/improve-full-screen-mode-for-pwa-l9vpxf
   const shell = document.querySelector('.app-shell');
   const ch = shell ? shell.scrollHeight : document.body.scrollHeight;
   const val = ch <= vh ? 'hidden' : 'auto';
