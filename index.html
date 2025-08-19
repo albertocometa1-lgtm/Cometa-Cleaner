@@ -283,7 +283,6 @@ textarea{ min-height:80px; resize:vertical }
 </head>
 <body>
 <header>
-  <button id="refreshBtn" class="btn icon" aria-label="Aggiorna pagina">⟳</button>
   <img id="appLogo" class="logo" alt="Logo">
   <h1 id="appTitle">Pulizie di Casa</h1>
   <span class="user-pill" id="userPill">
@@ -403,6 +402,12 @@ textarea{ min-height:80px; resize:vertical }
             <input type="file" id="restoreFile" accept="application/json">
           </label>
           <button id="clearDone" class="btn block">Cancella completate</button>
+        </div>
+      </details>
+      <details>
+        <summary>Aggiorna applicazione</summary>
+        <div class="grid" style="margin-top:10px">
+          <button id="refreshBtn" class="btn">Ricarica applicazione</button>
         </div>
       </details>
     </div>
@@ -612,9 +617,9 @@ if(refreshBtn){
     if("caches" in window){
       caches.keys()
         .then(keys => Promise.all(keys.map(k => caches.delete(k))))
-        .finally(() => location.reload(true));
+        .finally(() => window.location.reload(true));
     }else{
-      location.reload(true);
+      window.location.reload(true);
     }
   });
 }
