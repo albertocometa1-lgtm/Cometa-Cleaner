@@ -72,21 +72,23 @@ html[data-theme="dark"]{
 *{box-sizing:border-box}
 img{max-width:100%;height:auto;}
 html,body{
-  height:100%;
-  margin:0;
-  font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,'Helvetica Neue',Arial;
-  overflow:hidden;
+codex/improve-full-screen-mode-for-pwa-l9vpxf
   overscroll-behavior:none;
   overscroll-behavior-y:none;
+}
+body{
+codex/remove-background-section-and-add-dark-mode
+  background:var(--color-bg);
+  color:var(--color-text);
+
+  line-height:1.45;
+codex/improve-full-screen-mode-for-pwa-l9vpxf
+
 }
 html{
   scroll-padding-top:calc(56px + env(safe-area-inset-top));
   scroll-padding-bottom:calc(var(--bottom-nav-h) + env(safe-area-inset-bottom));
-}
-body{
-  background:var(--color-bg);
-  color:var(--color-text);
-  line-height:1.45;
+codex/improve-full-screen-mode-for-pwa-l9vpxf
 }
 header{
   position:sticky; top:0; z-index:30;
@@ -1545,8 +1547,12 @@ function setVH(){
 }
 function updateBodyScroll(){
   const vh = window.visualViewport ? visualViewport.height : window.innerHeight;
-  const ch = document.documentElement.scrollHeight;
-  document.body.style.overflow = ch <= vh ? 'hidden' : 'auto';
+codex/improve-full-screen-mode-for-pwa-l9vpxf
+  const shell = document.querySelector('.app-shell');
+  const ch = shell ? shell.scrollHeight : document.body.scrollHeight;
+  const val = ch <= vh ? 'hidden' : 'auto';
+  document.documentElement.style.overflowY = val;
+  document.body.style.overflowY = val;
 }
 const recalcViewport = (()=>{ let t; return ()=>{ clearTimeout(t); t=setTimeout(()=>{ setVH(); updateBodyScroll(); const el=document.activeElement; if(el && el.scrollIntoView){ el.scrollIntoView({block:'nearest', inline:'nearest'}); } }, 100); }; })();
 window.addEventListener('resize', recalcViewport);
