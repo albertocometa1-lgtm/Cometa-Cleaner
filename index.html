@@ -8,10 +8,10 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#00B3FF">
+<meta name="theme-color" content="#007AFF">
 <style>
 :root{
-  --brand:#00B3FF; --brand-2:#7C3AED;
+  --brand:#007AFF; --brand-2:#7C3AED;
   --bg:#F4F7FF; --card:#FFFFFF; --text:#0D1321; --muted:#5B6B86; --border:#E3E8F5;
   --shadow:0 10px 24px rgba(15,23,42,.10);
   --radius:16px; --fs-1:18px; --fs-2:16px; --fs-3:14px;
@@ -61,7 +61,7 @@ header h1{font-size:var(--fs-1); margin:0; flex:1; white-space:nowrap; overflow:
 .container{max-width:860px; margin:0 auto; padding:12px;}
 .view{display:none} .view.active{display:block}
 
-/* Tabs (To Do) */
+/* Tabs (Da Fare) */
 .tabs{display:flex; gap:8px; margin:6px 0 10px}
 .tab{flex:0 0 auto; padding:8px 12px; border-radius:999px; border:1px solid var(--border); background:#f3f7ff; font-weight:700; cursor:pointer}
 .tab.active{ background:linear-gradient(135deg,var(--brand),var(--brand-2)); color:#fff; border-color:transparent;}
@@ -233,7 +233,7 @@ textarea{ min-height:80px; resize:vertical }
 </header>
 
 <main class="container">
-  <!-- VIEW: TO DO -->
+  <!-- VIEW: DA FARE -->
   <section id="viewTasks" class="view active" style="background-size:cover;background-position:center">
     <div class="tabs">
       <button class="tab active" data-scope="oggi">Oggi</button>
@@ -351,7 +351,7 @@ textarea{ min-height:80px; resize:vertical }
 
 <!-- Bottom Nav -->
 <nav class="bottom-nav">
-  <button class="tabbtn active" data-tab="tasks">To Do</button>
+  <button class="tabbtn active" data-tab="tasks">Da Fare</button>
   <button class="tabbtn" data-tab="calendar">Calendario</button>
   <button class="tabbtn" data-tab="rank">Classifica</button>
   <button class="tabbtn" data-tab="settings">Impostazioni</button>
@@ -597,7 +597,14 @@ function ymdToDMYStr(s){ // "YYYY-MM-DD" -> "gg-mm-aa"
 
 /* ===== Scheduling / Status ===== */
 function parseLocal(dt){ return dt ? new Date(dt) : null; }
-function addInterval(d,n,u){ const nd=new Date(d); if(u==="days") nd.setDate(nd.getDate()+n); else if(u==="weeks") nd.setDate(nd.getDate()+7*n); else nd.setMonth(nd.getMonth()+n); return nd; }
+function addInterval(d,n,u){
+  const nd=new Date(d);
+  const step = Number(n);
+  if(u==="days") nd.setDate(nd.getDate()+step);
+  else if(u==="weeks") nd.setDate(nd.getDate()+7*step);
+  else nd.setMonth(nd.getMonth()+step);
+  return nd;
+}
 function nextOccurrenceFromStart(start,every,unit,ref){ if(!start) return null; let cur=new Date(start); if(!every||every<1) return cur; if(cur>=ref) return cur; let guard=0; while(cur<ref&&guard++<800){ cur=addInterval(cur,every,unit);} return cur;}
 function isSameDay(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
 function statusForTask(t){
@@ -647,7 +654,7 @@ function occursOnDay(task, day){
   }
 }
 
-/* ===== Tabs ToDo & Filtri ===== */
+/* ===== Tabs Da Fare & Filtri ===== */
 let scope="oggi";
 document.querySelectorAll(".tab").forEach(b=> b.addEventListener("click", ()=>{
   document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
