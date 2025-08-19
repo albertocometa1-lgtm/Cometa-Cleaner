@@ -2,7 +2,7 @@
   "name": "Cometa Cleaner",
   "short_name": "ComClean",
   "description": "Lista condivisa per le pulizie di casa. Offline, senza server.",
-  "start_url": ".",
+  "start_url": "./?v=1",
   "display": "standalone",
   "prefer_related_applications": false,
   "background_color": "#ffffff",
