@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pulizie di Casa</title>
-<link rel="manifest" href="/manifest.json?v=1">
+<link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Sappylo">
-<meta name="theme-color" content="#A0C4FF">
+<meta name="theme-color" content="#000000">
 <style>
 :root{
   --brand:#A0C4FF; --brand-2:#B9FBC0;
@@ -20,8 +20,6 @@
   --c-due:#FFF3B0; --c-due-text:#2D2D2D;
   --c-over:#FFB3C1; --c-over-text:#2D2D2D;
   --c-done:#B9FBC0; --c-done-text:#2D2D2D;
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-top: env(safe-area-inset-top, 0px);
   --bottom-nav-h: 80px; /* viene aggiornato da JS */
 }
 @media (prefers-color-scheme: dark){
@@ -31,33 +29,31 @@
   }
 }
 @media (display-mode: standalone){
-  :root{ --safe-top:0px; --safe-bottom:0px; }
+  /* rifiniture per PWA installata */
 }
 *{box-sizing:border-box}
 img{max-width:100%;height:auto;}
 html,body{
-  height:100%;
-  margin:0;
-  font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,'Helvetica Neue',Arial;
-  min-height:100svh;
-  min-height:100dvh; /* evita tagli su mobile con barra URL dinamica */
-}
-html{
-  scroll-padding-top:calc(56px + var(--safe-top));
-  scroll-padding-bottom:var(--bottom-nav-h);
+  overscroll-behavior:none;
+  overscroll-behavior-y:none;
 }
 body{
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,'Helvetica Neue',Arial;
+  overflow:hidden;
   background:var(--bg);
   color:var(--text);
   line-height:1.45;
-  overflow-x:hidden;
-  padding-bottom:calc(var(--bottom-nav-h, 80px) + var(--safe-bottom));
+}
+html{
+  scroll-padding-top:calc(56px + env(safe-area-inset-top));
+  scroll-padding-bottom:calc(var(--bottom-nav-h) + env(safe-area-inset-bottom));
 }
 header{
   position:sticky; top:0; z-index:30;
   background:var(--card);
   box-shadow:var(--shadow);
-  padding:calc(10px + var(--safe-top)) 12px 10px;
+  padding:calc(10px + env(safe-area-inset-top)) 12px 10px;
   display:flex; align-items:center; gap:10px;
 }
 @media (prefers-color-scheme: dark){
@@ -67,7 +63,22 @@ header h1{font-size:var(--fs-1); margin:0; flex:1; white-space:nowrap; overflow:
 .logo{width:26px;height:26px;border-radius:6px;object-fit:cover;border:1px solid var(--border); background:var(--brand);}
 .user-pill{display:flex; align-items:center; gap:8px; border:1px solid var(--border); padding:6px 10px; border-radius:999px; background:var(--brand-2);}
 .avatar{width:20px; height:20px; border-radius:50%; object-fit:cover; background:var(--brand-2);}
-.container{max-width:860px; margin:0 auto; padding:12px; display:flex; flex-direction:column; min-height:calc(100svh - (56px + var(--safe-top)) - var(--bottom-nav-h)); min-height:calc(100dvh - (56px + var(--safe-top)) - var(--bottom-nav-h));}
+.app-shell{
+  min-height:100dvh;
+  height:calc(var(--vh, 1vh) * 100);
+  padding-top:max(env(safe-area-inset-top), 8px);
+  padding-bottom:max(env(safe-area-inset-bottom), 8px);
+  padding-left:max(env(safe-area-inset-left), 8px);
+  padding-right:max(env(safe-area-inset-right), 8px);
+  display:flex;
+  flex-direction:column;
+}
+@supports not (height:100dvh){
+  .app-shell{min-height:100svh;}
+}
+.scroll-area{overflow:auto;-webkit-overflow-scrolling:touch;}
+.corner-safe{margin:8px;}
+.container{max-width:860px; margin:0 auto; padding:12px; display:flex; flex-direction:column; min-height:calc(100svh - (56px + env(safe-area-inset-top)) - var(--bottom-nav-h)); min-height:calc(100dvh - (56px + env(safe-area-inset-top)) - var(--bottom-nav-h));}
 .view{display:none; flex-direction:column; flex:1;}
 .view.active{display:flex;}
 #viewTasks{min-height:0;}
@@ -157,7 +168,7 @@ textarea{ min-height:80px; resize:vertical }
 /* Bottom nav */
 .bottom-nav{
   position:fixed; left:0; right:0; bottom:0; z-index:40; background:var(--card); border-top:1px solid var(--border); box-shadow:0 -1px 2px rgba(0,0,0,.05);
-  padding:8px max(12px, env(safe-area-inset-left)) calc(8px + var(--safe-bottom)) max(12px, env(safe-area-inset-right)); display:flex; gap:10px; justify-content:space-around;
+  padding:8px max(12px, env(safe-area-inset-left)) calc(8px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-right)); display:flex; gap:10px; justify-content:space-around;
 }
 .tabbtn{ flex:1; padding:10px 12px; border-radius:14px; border:1px solid var(--border); background:var(--card); font-weight:700; cursor:pointer; min-height:44px;}
 .tabbtn:focus-visible{ outline:2px solid var(--brand); outline-offset:2px; }
@@ -168,13 +179,13 @@ textarea{ min-height:80px; resize:vertical }
   position:fixed; z-index:5000;
   left:0; right:0; top:clamp(56px, 8svh, 120px); top:clamp(56px, 8dvh, 120px); bottom:0;
   width:100%; max-height:calc(100svh - clamp(56px, 8svh, 120px)); max-height:calc(100dvh - clamp(56px, 8dvh, 120px));
-  padding-top:var(--safe-top);
+  padding-top:env(safe-area-inset-top);
   background:var(--card); border:1px solid var(--border);
   border-radius:12px 12px 0 0; box-shadow:0 -4px 16px rgba(0,0,0,.1);
   display:none; overflow-y:auto;
 }
-.sheet header{ position:sticky; top:0; background:var(--card); padding:calc(12px + var(--safe-top)) 16px 12px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); }
-.sheet .content{ padding:12px 16px calc(16px + var(--safe-bottom)); }
+.sheet header{ position:sticky; top:0; background:var(--card); padding:calc(12px + env(safe-area-inset-top)) 16px 12px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); }
+.sheet .content{ padding:12px 16px calc(16px + env(safe-area-inset-bottom)); }
 
 /* Task full-screen view */
 .task-view{
@@ -189,13 +200,13 @@ textarea{ min-height:80px; resize:vertical }
   display:flex;
   align-items:center;
   gap:10px;
-  padding:calc(12px + var(--safe-top)) 16px 12px;
+  padding:calc(12px + env(safe-area-inset-top)) 16px 12px;
   border-bottom:1px solid var(--border);
 }
 .task-view .content{
   flex:1;
   overflow:auto;
-  padding:16px 16px calc(16px + var(--safe-bottom));
+  padding:16px 16px calc(16px + env(safe-area-inset-bottom));
 }
 .task-view .photos{
   display:flex;
@@ -244,7 +255,7 @@ textarea{ min-height:80px; resize:vertical }
 /* Toast (si posiziona sopra la bottom-nav reale) */
 .toast-wrap{
   position:fixed; left:50%; transform:translateX(-50%);
-  bottom:calc(var(--bottom-nav-h, 80px) + var(--safe-bottom));
+  bottom:calc(var(--bottom-nav-h, 80px) + env(safe-area-inset-bottom) + 8px);
   z-index:200; display:flex; flex-direction:column; gap:8px; align-items:center;
 }
 .toast{ background:#111827; color:#fff; padding:10px 14px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,.25); font-weight:600; max-width:90vw; }
@@ -270,7 +281,7 @@ textarea{ min-height:80px; resize:vertical }
   transition:transform .24s ease;
   padding:14px;
   overflow:auto;
-  margin-top:calc(8px + var(--safe-top));
+  margin-top:calc(8px + env(safe-area-inset-top));
   border-radius:0 0 0 16px;
   overscroll-behavior:contain;
 }
@@ -324,6 +335,7 @@ textarea{ min-height:80px; resize:vertical }
 </style>
 </head>
 <body>
+<div class="app-shell">
 <header>
   <img id="appLogo" class="logo" alt="Logo">
   <h1 id="appTitle">Pulizie di Casa</h1>
@@ -342,7 +354,7 @@ textarea{ min-height:80px; resize:vertical }
       <button class="btn" id="toggleFilters" style="margin-left:auto">Filtri</button>
     </div>
     <div class="chips" id="activeChips" style="margin:0 0 8px 0"></div>
-    <ul id="list"></ul>
+    <ul id="list" class="scroll-area"></ul>
     <div class="empty" id="empty" style="display:none">Niente da mostrare 🧽</div>
   </section>
 
@@ -467,7 +479,7 @@ textarea{ min-height:80px; resize:vertical }
 <!-- Filters Drawer -->
 <div id="filtersDrawer" class="drawer" aria-hidden="true">
   <div class="scrim" id="filtersScrim"></div>
-  <div class="panel" role="dialog" aria-label="Filtri">
+  <div class="panel scroll-area" role="dialog" aria-label="Filtri">
     <h3>Filtri</h3>
     <form class="filter-box">
       <div class="filter-grid">
@@ -515,12 +527,12 @@ textarea{ min-height:80px; resize:vertical }
 </div>
 
 <!-- Editor sheet -->
-<div id="sheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+<div id="sheet" class="sheet scroll-area" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
   <header>
     <h3 id="sheetTitle" style="margin:0;flex:1">Nuova pulizia</h3>
     <button id="sheetClose" class="btn">Chiudi</button>
   </header>
-  <div class="content">
+  <div class="content scroll-area">
     <form id="taskForm" class="form-grid">
       <input id="f-id" type="hidden">
       <label class="field full">Nome pulizia
@@ -592,8 +604,9 @@ textarea{ min-height:80px; resize:vertical }
 
 <!-- Toast container -->
 <div id="toastWrap" class="toast-wrap" aria-live="polite" aria-atomic="true"></div>
+</div>
 
-<script>
+  <script>
 /* ===== Stato & storage ===== */
 const DBKEY="pulizie-db-v10";
 const nowISO=()=>new Date().toISOString();
@@ -1510,6 +1523,28 @@ if(acc){
 }
 
 /* ===== Adattamento spazio sotto in base alla bottom-nav reale ===== */
+function setVH(){
+  const vh = window.visualViewport ? visualViewport.height : window.innerHeight;
+  document.documentElement.style.setProperty('--vh', vh * 0.01 + 'px');
+}
+function updateBodyScroll(){
+  const vh = window.visualViewport ? visualViewport.height : window.innerHeight;
+  const shell = document.querySelector('.app-shell');
+  const ch = shell ? shell.scrollHeight : document.body.scrollHeight;
+  const val = ch <= vh ? 'hidden' : 'auto';
+  document.documentElement.style.overflowY = val;
+  document.body.style.overflowY = val;
+}
+const recalcViewport = (()=>{ let t; return ()=>{ clearTimeout(t); t=setTimeout(()=>{ setVH(); updateBodyScroll(); const el=document.activeElement; if(el && el.scrollIntoView){ el.scrollIntoView({block:'nearest', inline:'nearest'}); } }, 100); }; })();
+window.addEventListener('resize', recalcViewport);
+window.addEventListener('orientationchange', recalcViewport);
+if(window.visualViewport){
+  visualViewport.addEventListener('resize', recalcViewport);
+}
+setVH();
+updateBodyScroll();
+
+/* ===== Adattamento spazio sotto in base alla bottom-nav reale ===== */
 function adaptBottomInset(){
   const nav = document.querySelector('.bottom-nav');
   const h = nav ? Math.ceil(nav.getBoundingClientRect().height) : 80;
@@ -1537,6 +1572,7 @@ function boot(){
 
   // calcola lo spazio per evitare il "taglio" in fondo
   adaptBottomInset();
+  updateBodyScroll();
 
 }
 boot();
