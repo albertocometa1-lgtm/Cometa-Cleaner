@@ -4,11 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pulizie di Casa</title>
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#007AFF">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sappylo">
+<meta name="theme-color" content="#000000">
 <style>
 :root{
   --brand:#007AFF; --brand-2:#7C3AED;
@@ -38,6 +39,7 @@ html,body{
   height:100%;
   margin:0;
   font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,'Helvetica Neue',Arial;
+  min-height:100svh;
   min-height:100dvh; /* evita tagli su mobile con barra URL dinamica */
 }
 html{
@@ -66,7 +68,7 @@ header h1{font-size:var(--fs-1); margin:0; flex:1; white-space:nowrap; overflow:
 .logo{width:26px;height:26px;border-radius:6px;object-fit:cover;border:1px solid var(--border); background:linear-gradient(135deg,var(--brand),var(--brand-2));}
 .user-pill{display:flex; align-items:center; gap:8px; border:1px solid var(--border); padding:6px 10px; border-radius:999px; background:#E6F7FF;}
 .avatar{width:20px; height:20px; border-radius:50%; object-fit:cover; background:var(--brand-2);}
-.container{max-width:860px; margin:0 auto; padding:12px; display:flex; flex-direction:column; min-height:calc(100dvh - (56px + var(--safe-top)) - var(--bottom-nav-h));}
+.container{max-width:860px; margin:0 auto; padding:12px; display:flex; flex-direction:column; min-height:calc(100svh - (56px + var(--safe-top)) - var(--bottom-nav-h)); min-height:calc(100dvh - (56px + var(--safe-top)) - var(--bottom-nav-h));}
 .view{display:none; flex-direction:column; flex:1;}
 .view.active{display:flex;}
 #viewTasks{min-height:0;}
@@ -133,8 +135,8 @@ textarea{ min-height:80px; resize:vertical }
   border-radius:18px 18px 0 0; box-shadow:0 -12px 32px rgba(0,0,0,.35);
   display:none; overflow-y:auto;
 }
-.sheet header{ position:sticky; top:0; background:var(--card); padding:12px 16px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); }
-.sheet .content{ padding:12px 16px 16px; }
+.sheet header{ position:sticky; top:0; background:var(--card); padding:calc(12px + var(--safe-top)) 16px 12px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); }
+.sheet .content{ padding:12px 16px calc(16px + var(--safe-bottom)); }
 
 /* Task full-screen view */
 .task-view{
@@ -149,13 +151,13 @@ textarea{ min-height:80px; resize:vertical }
   display:flex;
   align-items:center;
   gap:10px;
-  padding:12px 16px;
+  padding:calc(12px + var(--safe-top)) 16px 12px;
   border-bottom:1px solid var(--border);
 }
 .task-view .content{
   flex:1;
   overflow:auto;
-  padding:16px;
+  padding:16px 16px calc(16px + var(--safe-bottom));
 }
 .task-view .photos{
   display:flex;
