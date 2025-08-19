@@ -135,6 +135,40 @@ textarea{ min-height:80px; resize:vertical }
 .sheet header{ position:sticky; top:0; background:var(--card); padding:12px 16px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); }
 .sheet .content{ padding:12px 16px 16px; }
 
+/* Task full-screen view */
+.task-view{
+  position:fixed;
+  inset:0;
+  z-index:6000;
+  background:var(--card);
+  display:none;
+  flex-direction:column;
+}
+.task-view header{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:12px 16px;
+  border-bottom:1px solid var(--border);
+}
+.task-view .content{
+  flex:1;
+  overflow:auto;
+  padding:16px;
+}
+.task-view .photos{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:10px;
+}
+.task-view .photos img{
+  width:100%;
+  border-radius:12px;
+  border:1px solid var(--border);
+  object-fit:cover;
+}
+
 /* Classifica */
 .leader{ display:grid; gap:10px; }
 .row{ display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--border); padding:10px; border-radius:14px; box-shadow:var(--shadow); flex-wrap:wrap; overflow:hidden }
@@ -470,6 +504,21 @@ textarea{ min-height:80px; resize:vertical }
   </div>
 </div>
 
+<!-- Task full-screen view -->
+<div id="taskView" class="task-view" role="dialog" aria-modal="true" aria-hidden="true">
+  <header>
+    <h3 id="tvTitle" style="margin:0;flex:1"></h3>
+    <button id="tvClose" class="btn">Chiudi</button>
+  </header>
+  <div class="content">
+    <div id="tvMeta" class="badges"></div>
+    <div id="tvNotes" style="margin-top:10px"></div>
+    <div id="tvPhotos" class="photos"></div>
+    <div id="tvNext" style="margin-top:10px"></div>
+    <div id="tvActions" class="actions" style="margin-top:20px"></div>
+  </div>
+</div>
+
 <!-- Toast container -->
 <div id="toastWrap" class="toast-wrap" aria-live="polite" aria-atomic="true"></div>
 
@@ -776,11 +825,6 @@ function renderTasks(){
     // Accessibilità + interazioni su tutta la card
     li.setAttribute("tabindex", "0");
     li.setAttribute("role", "button");
-    li.setAttribute("aria-expanded", "false");
-    function toggleDetails(){
-      const expanded = li.classList.toggle("expanded");
-      li.setAttribute("aria-expanded", expanded ? "true" : "false");
-    }
 
     const head=document.createElement("div"); head.className="task-head";
     const chk=document.createElement("div"); chk.className="chk";
@@ -818,46 +862,17 @@ function renderTasks(){
     head.appendChild(chk); head.appendChild(headMain); head.appendChild(dateBadge); head.appendChild(chev);
     li.appendChild(head);
 
-    const details=document.createElement("div"); details.className="task-details";
-    const meta=document.createElement("div"); meta.className="badges";
-    if(t.room) meta.innerHTML+=`<span>${t.room}</span>`;
-    meta.innerHTML+=`<span>${t.priority===1?"Alta":t.priority===2?"Media":"Bassa"}</span>`;
-    if(t.assignee){ const cls=(t.assignee.toLowerCase()===(activeUser().name||"").toLowerCase())?"assignee-me":"assignee-partner"; meta.innerHTML+=`<span class="${cls}">A: ${t.assignee}</span>`; }
-    if(t.repeat?.enabled) meta.innerHTML+=`<span>Ogni ${t.repeat.every} ${t.repeat.unit==="days"?"giorni":t.repeat.unit==="weeks"?"settimane":"mesi"}</span>`; else meta.innerHTML+=`<span>Singolo</span>`;
-    details.appendChild(meta);
-
-    if(t.photos && t.photos.length){
-      const thumbs = document.createElement("div");
-      thumbs.style.cssText="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px";
-      t.photos.slice(0,4).forEach(src=>{
-        const im = document.createElement("img");
-        im.src = src; im.alt="foto"; im.style.cssText="width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--border)";
-        thumbs.appendChild(im);
-      });
-      details.appendChild(thumbs);
-    }
-
-    const sNext=document.createElement("div");
-    sNext.style.marginTop="6px";
-    sNext.innerHTML=`Prossima occorrenza: <strong>${s.next? fmtDMYHM(s.next) : "--"}</strong>`;
-    details.appendChild(sNext);
-
-    const actions=document.createElement("div"); actions.className="actions";
-    const editBtn=document.createElement("button"); editBtn.className="btn"; editBtn.textContent="Modifica"; editBtn.addEventListener("click", ev=>{ ev.stopPropagation(); openEditor(t); });
-    actions.appendChild(editBtn);
-    details.appendChild(actions);
-
-    // Apri/chiudi dettagli cliccando ovunque sulla card (tranne controlli interattivi)
+    // Apri la pagina dettagli cliccando ovunque sulla card (tranne controlli interattivi)
     li.addEventListener("click", (ev)=>{
       const tag = (ev.target.tagName || "").toLowerCase();
       if (tag === "input" || tag === "button" || tag === "select" || tag === "textarea" || ev.target.closest("button, input, select, textarea")) return;
-      toggleDetails();
+      openTaskView(t);
     });
     // Supporto tastiera
     li.addEventListener("keydown", (ev)=>{
       if(ev.key === "Enter" || ev.key === " "){
         ev.preventDefault();
-        toggleDetails();
+        openTaskView(t);
       }
     });
 
@@ -872,6 +887,9 @@ const fId=byId("f-id"), fTitle=byId("f-title"), fRoomSel=byId("f-roomSel"), fPri
       fStartAt=byId("f-startAt"), fAssignee=byId("f-assignee"), fRepEnabled=byId("f-rep-enabled"),
       fRepEvery=byId("f-rep-every"), fRepUnit=byId("f-rep-unit"), fNotes=byId("f-notes"),
       btnSave=byId("btnSave"), btnDelete=byId("btnDelete");
+const taskView=byId("taskView"), tvTitle=byId("tvTitle"), tvClose=byId("tvClose"),
+      tvMeta=byId("tvMeta"), tvNotes=byId("tvNotes"), tvPhotos=byId("tvPhotos"),
+      tvNext=byId("tvNext"), tvActions=byId("tvActions");
 
 function renderRoomSelect(){ fRoomSel.innerHTML = `<option value="">(Nessuna)</option>` + state.settings.rooms.map(r=>`<option>${r.name}</option>`).join(""); }
 function renderAssigneeSelects(){ const opts = state.users.map(u=>`<option value="${u.name}">${u.name}</option>`).join(""); fAssignee.innerHTML = `<option value="">(nessuno)</option>`+opts; }
@@ -892,6 +910,39 @@ function openEditor(task=null){
 }
 function closeEditor(){ sheet.style.display="none"; }
 sheetClose.addEventListener("click", closeEditor);
+
+function openTaskView(task){
+  tvTitle.textContent = task.title;
+  tvMeta.innerHTML = "";
+  if(task.room) tvMeta.innerHTML += `<span>${task.room}</span>`;
+  tvMeta.innerHTML += `<span>${task.priority===1?"Alta":task.priority===2?"Media":"Bassa"}</span>`;
+  if(task.assignee){
+    const cls = (task.assignee.toLowerCase()===(activeUser().name||"").toLowerCase()) ? "assignee-me" : "assignee-partner";
+    tvMeta.innerHTML += `<span class="${cls}">A: ${task.assignee}</span>`;
+  }
+  if(task.repeat?.enabled) tvMeta.innerHTML += `<span>Ogni ${task.repeat.every} ${task.repeat.unit==="days"?"giorni":task.repeat.unit==="weeks"?"settimane":"mesi"}</span>`;
+  else tvMeta.innerHTML += `<span>Singolo</span>`;
+  tvNotes.textContent = task.notes || "";
+  tvPhotos.innerHTML = "";
+  if(task.photos && task.photos.length){
+    task.photos.forEach(src=>{
+      const im=document.createElement("img"); im.src=src; tvPhotos.appendChild(im);
+    });
+  }
+  const s = statusForTask(task);
+  tvNext.innerHTML = `Prossima occorrenza: <strong>${s.next? fmtDMYHM(s.next) : "--"}</strong>`;
+  tvActions.innerHTML = "";
+  const editBtn=document.createElement("button"); editBtn.className="btn"; editBtn.textContent="Modifica";
+  editBtn.addEventListener("click", ()=>{ closeTaskView(); openEditor(task); });
+  tvActions.appendChild(editBtn);
+  taskView.style.display="flex";
+  taskView.setAttribute("aria-hidden","false");
+}
+function closeTaskView(){
+  taskView.style.display="none";
+  taskView.setAttribute("aria-hidden","true");
+}
+tvClose.addEventListener("click", closeTaskView);
 
 btnDelete.addEventListener("click", ()=>{
   if(!fId.value) return;
