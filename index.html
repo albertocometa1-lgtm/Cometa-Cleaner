@@ -66,8 +66,13 @@ header h1{font-size:var(--fs-1); margin:0; flex:1; white-space:nowrap; overflow:
 .logo{width:26px;height:26px;border-radius:6px;object-fit:cover;border:1px solid var(--border); background:linear-gradient(135deg,var(--brand),var(--brand-2));}
 .user-pill{display:flex; align-items:center; gap:8px; border:1px solid var(--border); padding:6px 10px; border-radius:999px; background:#E6F7FF;}
 .avatar{width:20px; height:20px; border-radius:50%; object-fit:cover; background:var(--brand-2);}
-.container{max-width:860px; margin:0 auto; padding:12px;}
-.view{display:none} .view.active{display:block}
+.container{max-width:860px; margin:0 auto; padding:12px; display:flex; flex-direction:column; min-height:calc(100dvh - (56px + var(--safe-top)) - var(--bottom-nav-h));}
+.view{display:none; flex-direction:column; flex:1;}
+.view.active{display:flex;}
+#viewTasks{min-height:0;}
+ul#list{list-style:none; padding:0; margin:0; flex:1; overflow:auto;}
+ul#list:empty{display:none;}
+#empty{flex:1; display:flex; align-items:center; justify-content:center;}
 
 /* Tabs (Da Fare) */
 .tabs{display:flex; gap:8px; margin:6px 0 10px}
@@ -75,7 +80,6 @@ header h1{font-size:var(--fs-1); margin:0; flex:1; white-space:nowrap; overflow:
 .tab.active{ background:linear-gradient(135deg,var(--brand),var(--brand-2)); color:#fff; border-color:transparent;}
 
 /* Lista pulizie */
-ul#list{ list-style:none; padding:0; margin:0;}
 li.task{ margin:10px 0; border-radius:18px; border:1px solid var(--border); box-shadow:var(--shadow); overflow:hidden; cursor:pointer; }
 .task-head{ display:flex; align-items:center; gap:10px; padding:12px 14px; }
 .chk input{ width:26px; height:26px; }
