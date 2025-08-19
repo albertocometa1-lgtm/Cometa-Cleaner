@@ -1,4 +1,4 @@
-const BUILD_HASH = "1";
+const BUILD_HASH = "2";
 
 function showUpdateToast() {
   if (document.getElementById("updateToast")) return;

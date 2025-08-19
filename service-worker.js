@@ -1,4 +1,4 @@
-const BUILD_HASH = "1";
+const BUILD_HASH = "2";
 const CACHE_NAME = `app-cache-v${BUILD_HASH}`;
 const ASSETS = [
   "./",
