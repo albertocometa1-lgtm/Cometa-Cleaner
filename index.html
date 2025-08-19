@@ -116,6 +116,14 @@ li.task.due .date-badge, li.task.over .date-badge, li.task.done .date-badge{ bor
 input, select, textarea{ padding:12px; border:1px solid var(--border); border-radius:12px; background:var(--card); color:var(--text); font-size:var(--fs-2) }
 textarea{ min-height:80px; resize:vertical }
 
+.filter-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;}
+.filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.filter-grid .full{grid-column:1/-1;}
+.filter-box label{font-weight:600;font-size:var(--fs-2);display:flex;flex-direction:column;gap:4px;}
+.filter-box label.check{flex-direction:row;align-items:center;min-height:44px;padding:4px 8px;border:1px solid var(--border);border-radius:12px;}
+.filter-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:16px;}
+@media(max-width:480px){.filter-grid{grid-template-columns:1fr;}}
+
 /* Bottom nav */
 .bottom-nav{
   position:fixed; left:0; right:0; bottom:0; z-index:40; background:var(--card); border-top:1px solid var(--border); box-shadow:0 -4px 12px rgba(0,0,0,.06);
@@ -429,40 +437,48 @@ textarea{ min-height:80px; resize:vertical }
   <div class="scrim" id="filtersScrim"></div>
   <div class="panel" role="dialog" aria-label="Filtri">
     <h3>Filtri</h3>
-    <div class="grid">
-      <input id="f-q" placeholder="Cerca per nome/notes">
-      <label>Stanza
-        <select id="f-room"></select>
-      </label>
-      <label>Assegnatario
-        <select id="f-user"></select>
-      </label>
-      <label>Priorità
-        <select id="f-pri">
-          <option value="">(tutte)</option>
-          <option value="1">Alta</option>
-          <option value="2">Media</option>
-          <option value="3">Bassa</option>
-        </select>
-      </label>
-      <label>Stato
-        <select id="f-state">
-          <option value="">(tutti)</option>
-          <option value="future">Futuro</option>
-          <option value="due">In scadenza oggi</option>
-          <option value="over">Scaduto</option>
-          <option value="done">Completato</option>
-        </select>
-      </label>
-      <label>Completate oggi <input type="checkbox" id="f-done-today"></label>
-      <label>Non completate oggi <input type="checkbox" id="f-not-done-today"></label>
-      <label>Data da <input type="date" id="f-from"></label>
-      <label>Data a <input type="date" id="f-to"></label>
-    </div>
-    <div style="display:flex;gap:8px;margin-top:12px">
-      <button class="btn" id="clearFilters">Pulisci</button>
-      <button class="btn primary" id="closeFilters">Applica</button>
-    </div>
+    <form class="filter-box">
+      <div class="filter-grid">
+        <label class="full">Cerca
+          <input id="f-q" placeholder="Cerca per nome/notes">
+        </label>
+        <label>Stanza
+          <select id="f-room"></select>
+        </label>
+        <label>Assegnatario
+          <select id="f-user"></select>
+        </label>
+        <label>Priorità
+          <select id="f-pri">
+            <option value="">(tutte)</option>
+            <option value="1">Alta</option>
+            <option value="2">Media</option>
+            <option value="3">Bassa</option>
+          </select>
+        </label>
+        <label>Stato
+          <select id="f-state">
+            <option value="">(tutti)</option>
+            <option value="future">Futuro</option>
+            <option value="due">In scadenza oggi</option>
+            <option value="over">Scaduto</option>
+            <option value="done">Completato</option>
+          </select>
+        </label>
+        <label class="check full"><input type="checkbox" id="f-done-today"> Completate oggi</label>
+        <label class="check full"><input type="checkbox" id="f-not-done-today"> Non completate oggi</label>
+        <label>Data da
+          <input type="date" id="f-from">
+        </label>
+        <label>Data a
+          <input type="date" id="f-to">
+        </label>
+      </div>
+      <div class="filter-actions">
+        <button class="btn" id="clearFilters" type="button">Pulisci</button>
+        <button class="btn primary" id="closeFilters" type="button">Applica</button>
+      </div>
+    </form>
   </div>
 </div>
 
