@@ -367,6 +367,7 @@ textarea{ min-height:80px; resize:vertical }
             <input type="file" id="restoreFile" accept="application/json">
           </label>
           <button id="clearDone" class="btn block">Cancella completate</button>
+          <button id="refreshBtn" class="btn block">Aggiorna app</button>
         </div>
       </details>
     </div>
@@ -555,6 +556,18 @@ function relLum({r,g,b}){ const s=[r,g,b].map(v=>{ v/=255; return v<=0.03928? v/
 function byId(id){ return document.getElementById(id); }
 const logoEl=byId("appLogo");
 const avatarEl=byId("avatar"), whoEl=byId("who");
+const refreshBtn = byId("refreshBtn");
+if(refreshBtn){
+  refreshBtn.addEventListener("click", () => {
+    const clearCaches = "caches" in window
+      ? caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))))
+      : Promise.resolve();
+    const unregisterSW = "serviceWorker" in navigator
+      ? navigator.serviceWorker.getRegistrations().then(regs => Promise.all(regs.map(r => r.unregister())))
+      : Promise.resolve();
+    Promise.all([clearCaches, unregisterSW]).finally(() => location.reload(true));
+  });
+}
 function activeUser(){ return state.users.find(u=>u.id===state.activeUserId) || state.users[0]; }
 function setActiveUser(id){ state.activeUserId=id; save(); renderHeader(); renderAssigneeSelects(); renderUsersList(); renderLeader(); renderHistory(); }
 
