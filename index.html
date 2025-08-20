@@ -342,9 +342,29 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
   background:var(--surface-color); border:1px solid var(--border-color); border-radius:10px; padding:8px; min-height:64px; position:relative;
   display:flex; flex-direction:column; gap:6px; box-shadow:var(--shadow);
 }
-.cal-daynum{ font-weight:800; font-size:12px; opacity:.9; }
+.cal-daynum{
+  font-weight:800; font-size:12px; opacity:.9;
+  padding-right:24px; padding-top:2px; line-height:1;
+}
 .cal-badge{
-  position:absolute; top:8px; right:8px; font-size:11px; padding:3px 6px; border-radius:999px; border:1px solid var(--border-color); background:var(--accent-color-2);
+  position:absolute; top:4px; right:4px; z-index:2;
+  font-size:11px; min-width:20px; min-height:20px; padding:0 6px;
+  display:flex; align-items:center; justify-content:center;
+  border-radius:999px; border:1px solid var(--border-color);
+  background:var(--accent-color-2); color:var(--text-on-accent2);
+  pointer-events:none;
+}
+@media (max-width:359px){
+  .cal-badge{ transform:scale(.85); font-size:10px; }
+  .cal-daynum{ padding-right:20px; }
+}
+@media (min-width:360px) and (max-width:768px){
+  .cal-badge{ font-size:11px; }
+  .cal-daynum{ padding-right:24px; }
+}
+@media (min-width:769px){
+  .cal-badge{ font-size:12px; padding:0 8px; }
+  .cal-daynum{ padding-right:28px; }
 }
 .cal-cell.muted{ opacity:.55; }
 .cal-cell.today{ border:2px solid var(--accent-color); }
@@ -859,9 +879,11 @@ updateVH();
 
 /* Palette */
 function applyPalette(p){
-  document.documentElement.style.setProperty("--accent-color", p.brand);
-  document.documentElement.style.setProperty("--accent-color-2", p.brand2);
-  document.documentElement.style.setProperty("--bg-light", p.bg);
+  const root=document.documentElement;
+  root.style.setProperty("--accent-color", p.brand);
+  root.style.setProperty("--accent-color-2", p.brand2);
+  root.style.setProperty("--bg-light", p.bg);
+  root.style.setProperty("--text-on-accent2", bestTextColor(p.brand2));
   updateThemeColor();
   updateTextContrast();
 }
@@ -1654,7 +1676,7 @@ function renderCalendar(){
     cell.className="cal-cell"+(muted?" muted":"");
     if(!muted && isSameDay(d,new Date())) cell.classList.add("today");
     cell.setAttribute("data-date", d.toISOString().slice(0,10));
-    cell.innerHTML = `<div class="cal-daynum">${d.getDate()}</div>${count? `<div class="cal-badge">${count}</div>`:""}`;
+    cell.innerHTML = `<div class="cal-daynum">${d.getDate()}</div>${count? `<div class="cal-badge" aria-label="${count} pulizie">${count}</div>`:""}`;
     cell.addEventListener("click", ()=> openDayDrawer(d, cell));
     cells.push(cell);
   }
