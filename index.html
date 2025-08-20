@@ -123,8 +123,9 @@ header h1{font-size:var(--fs-1); margin:0; flex:1; white-space:nowrap; overflow:
 .view{display:none; flex-direction:column; flex:1;}
 .view.active{display:flex;}
 #viewTasks{min-height:0;}
-ul#list{list-style:none; padding:0; margin:0; flex:1;}
+ul#list{list-style:none; padding:0; margin:0; flex:1; display:flex; flex-direction:column; gap:var(--space-8);}
 ul#list:empty{display:none;}
+ul#list > li{min-height:44px;}
 #empty{flex:1; display:flex; align-items:center; justify-content:center;}
 
 /* Tabs (Da Fare) */
@@ -133,15 +134,15 @@ ul#list:empty{display:none;}
 .tab.active{ --btn-bg-color:var(--accent-color); background:var(--btn-bg-color); color:var(--btn-text-color); border-color:var(--accent-color);}
 
 /* Lista pulizie */
-li.task{ margin:10px 0; border-radius:12px; border:1px solid var(--border-color); box-shadow:var(--shadow); overflow:hidden; cursor:pointer; }
-.task-head{ display:flex; align-items:center; gap:10px; padding:12px 14px; }
+.task-head{ display:flex; align-items:center; gap:10px; padding:var(--space-12) var(--space-16); }
+li.task{ margin:10px 0; border-radius:var(--radius-8); border:1px solid var(--border-color); box-shadow:var(--shadow); overflow:hidden; cursor:pointer; }
 .chk input{ width:26px; height:26px; }
 .head-main{ flex:1; min-width:0; }
-.title{ font-weight:800; font-size:var(--fs-2); word-break:break-word; }
+.title{ font-weight:800; font-size:var(--fs-2); word-break:break-word; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .notes-line{ font-size:var(--fs-3); opacity:.9; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px;}
 .date-badge{ font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid rgba(0,0,0,.08); background:rgba(255,255,255,.35)}
 .chev{ transition:transform .2s } li.task.expanded .chev{ transform:rotate(90deg); }
-.task-details{ display:none; padding:10px 14px 14px; border-top:1px dashed rgba(0,0,0,.12); }
+.task-details{ display:none; padding:var(--space-12) var(--space-16) var(--space-16); border-top:1px dashed rgba(0,0,0,.12); }
 li.task.expanded .task-details{ display:block; }
 
 /* Stato colori */
@@ -173,8 +174,9 @@ li.task.due .date-badge, li.task.over .date-badge, li.task.done .date-badge{ bor
 .empty{ padding:24px; text-align:center; color:var(--text-color); opacity:.9; font-size:var(--fs-2) }
 
 /* Forms */
-.grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px }
+.grid{ display:grid; grid-template-columns:1fr; gap:var(--space-8); }
 .grid .full{ grid-column:1/-1 }
+@media(min-width:768px){.grid{ grid-template-columns:repeat(2,1fr); }}
 .add-row{ margin-top:10px; padding-top:10px; border-top:1px solid var(--border-color); }
 input, select, textarea{ padding:12px; border:1px solid var(--border-color); border-radius:8px; background:var(--surface-color); color:var(--text-color); font-size:var(--fs-2) }
 textarea{ min-height:80px; resize:vertical }
@@ -206,7 +208,7 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
 .photo-zone{ border:2px dashed var(--border-color); border-radius:12px; padding:20px; text-align:center; cursor:pointer; }
 .photo-zone.hover{ background:var(--bg-color); }
 .photo-preview{ position:relative; margin-top:10px; display:none; }
-.photo-preview img{ width:100px; height:100px; object-fit:cover; border-radius:12px; border:1px solid var(--border-color); }
+.photo-preview img{ width:100px; height:100px; object-fit:cover; aspect-ratio:1/1; border-radius:12px; border:1px solid var(--border-color); }
 .photo-preview button{ position:absolute; top:4px; right:4px; }
 
 .filter-box{background:var(--surface-color);border:1px solid var(--border-color);border-radius:16px;padding:16px;}
@@ -395,6 +397,7 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
 }
 .accordion details > *:not(summary){ padding:12px 14px; }
 </style>
+<link rel="stylesheet" href="global.css">
 </head>
 <body>
 <div class="app-shell scroll-area">
