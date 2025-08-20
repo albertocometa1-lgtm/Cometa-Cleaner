@@ -1210,11 +1210,32 @@ photoInput.addEventListener('change', ()=> handlePhotoFile(photoInput.files[0]))
 photoRemove.addEventListener('click', ()=>{ photoData=null; photoPreview.style.display='none'; photoInput.value=''; });
 function handlePhotoFile(file){
   if(!file) return;
-  if(!/image\/(jpeg|png)/.test(file.type)){ alert('Solo immagini JPG/PNG'); return; }
-  if(file.size > 5*1024*1024){ alert('Max 5MB'); return; }
-  const r=new FileReader();
-  r.onload=()=>{ photoData=r.result; photoImg.src=photoData; photoPreview.style.display='block'; };
-  r.readAsDataURL(file);
+  if(!/image\/(jpeg|png)/.test(file.type)){
+    showToast('Formato immagine non supportato');
+    console.error('Formato immagine non supportato', file.type);
+    return;
+  }
+  if(file.size > 5*1024*1024){
+    showToast('Immagine troppo grande (max 5MB)');
+    console.error('File troppo grande', file.size);
+    return;
+  }
+  try{
+    const r=new FileReader();
+    r.onerror=e=>{
+      console.error('Errore lettura foto', e);
+      showToast('Errore nel caricamento della foto');
+    };
+    r.onload=()=>{
+      photoData=r.result;
+      photoImg.src=photoData;
+      photoPreview.style.display='block';
+    };
+    r.readAsDataURL(file);
+  }catch(err){
+    console.error('Impossibile leggere la foto', err);
+    showToast('Errore nel caricamento della foto');
+  }
 }
 function openEditor(task=null){
   editorDrawer.classList.add("open");
@@ -1275,10 +1296,24 @@ function openTaskView(task){
   }
   tvNotes.textContent = task.notes || task.description || "";
   tvPhotos.innerHTML = "";
+  const appendImg = (src) => {
+    const im=document.createElement('img');
+    im.alt='Foto pulizia';
+    im.src=src;
+    im.addEventListener('error',()=>{
+      console.error('Errore caricando foto', src);
+      showToast('Impossibile caricare una foto');
+      im.remove();
+      if(!tvPhotos.querySelector('img')) tvPhotos.textContent='Errore nel caricamento delle foto';
+    });
+    tvPhotos.appendChild(im);
+  };
   if(task.photo){
-    const im=document.createElement("img"); im.src=task.photo; tvPhotos.appendChild(im);
+    appendImg(task.photo);
   }else if(task.photos && task.photos.length){
-    task.photos.forEach(src=>{ const im=document.createElement("img"); im.src=src; tvPhotos.appendChild(im); });
+    task.photos.forEach(src=> appendImg(src));
+  } else {
+    tvPhotos.textContent = 'Nessuna foto disponibile';
   }
   const s = statusForTask(task);
   tvNext.innerHTML = `Prossima occorrenza: <strong>${s.next? fmtDMYHM(s.next) : "--"}</strong>`;
@@ -1310,7 +1345,24 @@ btnDelete.addEventListener("click", ()=>{
 });
 
 /* Foto helpers */
-function fileToDataURL(file){ return new Promise(res=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.readAsDataURL(file); }); }
+function fileToDataURL(file){
+  return new Promise((res, rej)=>{
+    try{
+      const r=new FileReader();
+      r.onload=()=>res(r.result);
+      r.onerror=e=>{
+        console.error('Errore lettura file', e);
+        showToast('Errore nel caricamento della foto');
+        rej(e);
+      };
+      r.readAsDataURL(file);
+    }catch(err){
+      console.error('Impossibile convertire il file', err);
+      showToast('Errore nel caricamento della foto');
+      rej(err);
+    }
+  });
+}
 
 form.addEventListener("submit", (e)=>{
   e.preventDefault();
