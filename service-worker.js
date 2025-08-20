@@ -45,16 +45,16 @@ self.addEventListener("fetch", (event) => {
 
   if (req.mode === "navigate" || (req.headers.get("accept") || "").includes("text/html")) {
     event.respondWith(
-      fetch(req)
-        .then(res => {
-          const copy = res.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
-          return res;
-        })
-        .catch(() => caches.match(req))
-    );
-    return;
-  }
+        fetch(req)
+          .then(res => {
+            const copy = res.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
+            return res;
+          })
+          .catch(() => caches.match(req).then(r => r || caches.match("./index.html")))
+      );
+      return;
+    }
 
   event.respondWith(
     caches.match(req).then(cached => {

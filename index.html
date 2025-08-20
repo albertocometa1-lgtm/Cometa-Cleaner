@@ -126,7 +126,6 @@ li.task.due .date-badge, li.task.over .date-badge, li.task.done .date-badge{ bor
 .grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px }
 .grid .full{ grid-column:1/-1 }
 .add-row{ margin-top:10px; padding-top:10px; border-top:1px solid var(--color-border); }
-  codex/update-app-ui-with-pastel-themes
 input, select, textarea{ padding:12px; border:1px solid var(--color-border); border-radius:8px; background:var(--color-surface); color:var(--color-text); font-size:var(--fs-2) }
 textarea{ min-height:80px; resize:vertical }
 .toggle{
@@ -676,6 +675,10 @@ function showToast(msg, timeout=2200){
 }
 /* ===== Util/UI ===== */
 function byId(id){ return document.getElementById(id); }
+function esc(str){
+  const map = {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"};
+  return String(str).replace(/[&<>"']/g, m => map[m]);
+}
 const logoEl=byId("appLogo");
 const avatarEl=byId("avatar"), whoEl=byId("who");
 const refreshBtn = byId("refreshBtn");
@@ -870,8 +873,12 @@ const filterInputs={
 };
 Object.values(filterInputs).forEach(el=> el.addEventListener("input", ()=>{ renderChips(); }));
 
-function renderRoomFilters(){ filterInputs.room.innerHTML=`<option value="">(tutte)</option>` + state.settings.rooms.map(r=>`<option value="${r.name}">${r.name}</option>`).join(""); }
-function renderUserFilters(){ filterInputs.user.innerHTML=`<option value="">(tutti)</option>` + state.users.map(u=>`<option value="${u.name}">${u.name}</option>`).join(""); }
+function renderRoomFilters(){
+  filterInputs.room.innerHTML=`<option value="">(tutte)</option>` + state.settings.rooms.map(r=>`<option value="${esc(r.name)}">${esc(r.name)}</option>`).join("");
+}
+function renderUserFilters(){
+  filterInputs.user.innerHTML=`<option value="">(tutti)</option>` + state.users.map(u=>`<option value="${esc(u.name)}">${esc(u.name)}</option>`).join("");
+}
 function renderChips(){
   const chips=[];
   const {q,room,user,pri,state,doneToday,notDoneToday,from,to}=filterInputs;
@@ -883,7 +890,7 @@ function renderChips(){
   if(doneToday.checked) chips.push("completate:oggi");
   if(notDoneToday.checked) chips.push("non completate:oggi");
   if(from.value||to.value) chips.push(`data:${from.value? ymdToDMYStr(from.value):".."}→${to.value? ymdToDMYStr(to.value):".."}`);
-  chipsEl.innerHTML=chips.map(c=>`<span class="chip">${c}</span>`).join("");
+  chipsEl.innerHTML=chips.map(c=>`<span class="chip">${esc(c)}</span>`).join("");
 }
 
 /* ===== LISTA PULIZIE ===== */
@@ -1018,8 +1025,15 @@ const taskView=byId("taskView"), tvTitle=byId("tvTitle"), tvClose=byId("tvClose"
       tvNext=byId("tvNext"), tvActions=byId("tvActions");
 let photoData=null;
 
-function renderRoomSelect(){ if(!fRoomSel) return; fRoomSel.innerHTML = `<option value="">(Nessuna)</option>` + state.settings.rooms.map(r=>`<option>${r.name}</option>`).join(""); }
-function renderAssigneeSelects(){ if(!fAssignee) return; const opts = state.users.map(u=>`<option value="${u.name}">${u.name}</option>`).join(""); fAssignee.innerHTML = `<option value="">(nessuno)</option>`+opts; }
+function renderRoomSelect(){
+  if(!fRoomSel) return;
+  fRoomSel.innerHTML = `<option value="">(Nessuna)</option>` + state.settings.rooms.map(r=>`<option value="${esc(r.name)}">${esc(r.name)}</option>`).join("");
+}
+function renderAssigneeSelects(){
+  if(!fAssignee) return;
+  const opts = state.users.map(u=>`<option value="${esc(u.name)}">${esc(u.name)}</option>`).join("");
+  fAssignee.innerHTML = `<option value="">(nessuno)</option>`+opts;
+}
 
 if(fNotes){
   fNotes.addEventListener('input', ()=>{ fNotes.style.height='auto'; fNotes.style.height=fNotes.scrollHeight+'px'; });
@@ -1231,9 +1245,9 @@ function renderHistory(){
     const cls = ev.delta>=0 ? "pos" : "neg";
     return `<div class="event">
 <span class="delta ${cls}">${sign}${ev.delta}</span>
-<strong>${ev.userName}</strong>
-<span>— ${ev.reason}</span>
-${ev.taskTitle? `<em> (${ev.taskTitle})</em>`:""}
+<strong>${esc(ev.userName)}</strong>
+<span>— ${esc(ev.reason)}</span>
+${ev.taskTitle? `<em> (${esc(ev.taskTitle)})</em>`:""}
 <span style="margin-left:auto">${ds}</span>
 </div>`;
   }).join("") || "<div class='muted'>Ancora nessun evento.</div>";
@@ -1253,7 +1267,7 @@ function colorHexFromName(name){
   return f ? f.hex : USER_COLORS[0].hex;
 }
 function renderUsersList(){
-  activeUserSel.innerHTML = state.users.map(u=>`<option value="${u.id}" ${u.id===state.activeUserId?"selected":""}>${u.name}</option>`).join("");
+  activeUserSel.innerHTML = state.users.map(u=>`<option value="${u.id}" ${u.id===state.activeUserId?"selected":""}>${esc(u.name)}</option>`).join("");
   usersList.innerHTML="";
   state.users.forEach(u=>{
     const wrap=document.createElement("div"); wrap.className="row"; wrap.style.gap="12px";
@@ -1468,19 +1482,19 @@ function renderCalendarDayList(d){
   }
   const list = items.sort((a,b)=> (a.priority-b.priority) || (a.title||"").localeCompare(b.title||""))
     .map(t=>{
-      const desc = t.notes ? ` • ${t.notes}` : "";
+      const desc = t.notes ? ` • ${esc(t.notes)}` : "";
       const hasPhotos = t.photo ? ' • 📷1' : '';
       return `<li class="task future" style="list-style:none; margin:8px 0; padding:10px; border-radius:10px; border:1px solid var(--color-border);">
   <div style="display:flex; gap:8px; align-items:center;">
     <div class="head-main" style="flex:1; min-width:0;">
-      <div class="title">${t.title||t.name}</div>
+      <div class="title">${esc(t.title||t.name)}</div>
       <div class="notes-line">${desc}${hasPhotos}</div>
     </div>
     <button class="btn" data-edit="${t.id}">Modifica</button>
   </div>
 </li>`;
     }).join("");
-  calDayList.innerHTML = `<div style="margin-top:12px;"><strong>${title}</strong></div><ul style="padding:0;margin:6px 0 0 0;">${list}</ul>`;
+  calDayList.innerHTML = `<div style="margin-top:12px;"><strong>${esc(title)}</strong></div><ul style="padding:0;margin:6px 0 0 0;">${list}</ul>`;
   calDayList.querySelectorAll('button[data-edit]').forEach(b=>{
     b.addEventListener('click', ()=>{
       const t = state.tasks.find(x=>x.id===b.getAttribute('data-edit'));
