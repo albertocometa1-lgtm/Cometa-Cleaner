@@ -28,6 +28,8 @@
   --delta-pos:#117733; --delta-neg:#B00020;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-top: env(safe-area-inset-top, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
   --icon-on-bg: var(--text-color);
   --icon-on-surface: var(--text-color);
   --btn-icon-color: var(--icon-on-surface);
@@ -65,6 +67,8 @@ html,body{
   font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,'Helvetica Neue',Arial;
   min-height:100svh;
   min-height:100dvh; /* evita tagli su mobile con barra URL dinamica */
+  overflow:hidden;
+  overscroll-behavior:none;
 }
 html{
   scroll-padding-top:var(--nav-height);
@@ -74,11 +78,23 @@ body{
   background:var(--bg-color);
   color:var(--text-color);
   line-height:1.45;
-  overflow-x:hidden;
-  padding-bottom:var(--safe-bottom);
+}
+.app-shell{
+  --p-top:max(var(--safe-top),8px);
+  min-height:100dvh;
+  height:var(--vh,100dvh);
+  padding:var(--p-top) max(var(--safe-right),8px) max(var(--safe-bottom),8px) max(var(--safe-left),8px);
+  display:flex;
+  flex-direction:column;
+}
+.scroll-area{
+  overflow:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
 }
 header{
   position:sticky; top:0; z-index:30;
+  margin-top:calc(-1 * var(--p-top));
   background:var(--nav-bg);
   box-shadow:var(--shadow);
 }
@@ -107,7 +123,7 @@ header h1{font-size:var(--fs-1); margin:0; flex:1; white-space:nowrap; overflow:
 .view{display:none; flex-direction:column; flex:1;}
 .view.active{display:flex;}
 #viewTasks{min-height:0;}
-ul#list{list-style:none; padding:0; margin:0; flex:1; overflow:auto;}
+ul#list{list-style:none; padding:0; margin:0; flex:1;}
 ul#list:empty{display:none;}
 #empty{flex:1; display:flex; align-items:center; justify-content:center;}
 
@@ -214,9 +230,7 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
   transform:translateY(100%);
   transition:transform .18s ease;
   padding:14px;
-  overflow:auto;
   border-radius:16px 16px 0 0;
-  overscroll-behavior:contain;
   padding-bottom:calc(16px + var(--safe-bottom));
 }
 .drawer.open .panel{ transform:none; }
@@ -241,7 +255,6 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
 }
 .task-view .content{
   flex:1;
-  overflow:auto;
   padding:16px 16px calc(16px + var(--safe-bottom));
 }
 .task-view .photos{
@@ -310,10 +323,8 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
   transform:translateY(-100%);
   transition:transform .24s ease;
   padding:14px;
-  overflow:auto;
   margin-top:calc(8px + var(--safe-top));
   border-radius:0 0 0 16px;
-  overscroll-behavior:contain;
 }
 .drawer.open .panel{ transform:none; }
 @media (max-width:560px){
@@ -366,11 +377,12 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
 </style>
 </head>
 <body>
+<div class="app-shell scroll-area">
 <header id="appHeader">
   <div class="top-bar">
     <img id="appLogo" class="logo" alt="Logo">
     <h1 id="appTitle">Pulizie di Casa</h1>
-    <button id="toggleFilters" class="icon-btn" aria-label="Apri filtri" role="button">
+    <button id="toggleFilters" class="icon-btn" aria-label="Filtri">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 4h18l-7 8v6l-4 2v-8z"/></svg>
     </button>
     <button id="addTaskBtn" class="icon-btn" aria-label="Nuova pulizia">
@@ -409,7 +421,7 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
       <button class="tab" data-scope="tutte">Tutte</button>
     </div>
     <div class="chips" id="activeChips" style="margin:0 0 8px 0"></div>
-    <ul id="list"></ul>
+    <ul id="list" class="scroll-area"></ul>
     <div class="empty" id="empty" style="display:none">Niente da mostrare 🧽</div>
   </section>
 
@@ -521,6 +533,7 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
     </div>
   </section>
 </main>
+</div>
 
 <div id="loaderOverlay" class="loader" aria-hidden="true">
   <img src="icons/icon-192.png" alt="" class="loader-logo">
@@ -530,7 +543,7 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
 <!-- Filters Drawer -->
 <div id="filtersDrawer" class="drawer" aria-hidden="true">
   <div class="scrim" id="filtersScrim"></div>
-  <div class="panel" role="dialog" aria-modal="true" aria-label="Filtri">
+  <div class="panel scroll-area" role="dialog" aria-modal="true" aria-label="Filtri">
     <h3>Filtri</h3>
     <form class="filter-box">
       <div class="filter-grid">
@@ -569,7 +582,7 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
 <!-- Calendar Day drawer -->
 <div id="dayDrawer" class="drawer" aria-hidden="true">
   <div class="scrim" id="dayScrim"></div>
-  <div class="panel" role="dialog" aria-modal="true" aria-label="Pulizie del giorno">
+  <div class="panel scroll-area" role="dialog" aria-modal="true" aria-label="Pulizie del giorno">
     <h3 id="dayTitle"></h3>
     <div id="dayList"></div>
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:12px;">
@@ -581,7 +594,7 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
 <!-- Editor drawer -->
 <div id="editorDrawer" class="drawer" aria-hidden="true">
   <div class="scrim" id="editorScrim"></div>
-  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="panel scroll-area" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
   <header>
     <h3 id="sheetTitle" style="margin:0;flex:1">Nuova pulizia</h3>
     <button id="sheetClose" class="btn">Chiudi</button>
@@ -648,7 +661,7 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
     <h3 id="tvTitle" style="margin:0;flex:1"></h3>
     <button id="tvClose" class="btn">Chiudi</button>
   </header>
-  <div class="content">
+  <div class="content scroll-area">
     <div id="tvMeta" class="badges"></div>
     <div id="tvNotes" style="margin-top:10px"></div>
     <div id="tvPhotos" class="photos"></div>
@@ -806,8 +819,11 @@ function bestTextColor(bg){
 function updateTextContrast(){
   const root=document.documentElement;
   const bg=getComputedStyle(root).getPropertyValue('--bg-color').trim();
+  const surface=getComputedStyle(root).getPropertyValue('--surface-color').trim();
   const text=bestTextColor(bg);
   root.style.setProperty('--text-color', text);
+  root.style.setProperty('--icon-on-bg', bestTextColor(bg));
+  root.style.setProperty('--icon-on-surface', bestTextColor(surface));
   root.style.setProperty('--placeholder-color', text==='#000000'? 'rgba(0,0,0,0.6)':'rgba(255,255,255,0.6)');
   document.querySelectorAll('.btn, .tab.active, .nav-tab.active').forEach(el=>{
     const bgc=getComputedStyle(el).getPropertyValue('--btn-bg-color').trim()||bg;
@@ -825,6 +841,21 @@ function applyTheme(t){
   updateTextContrast();
 }
 themeMedia.addEventListener('change', ()=>{ if(state.appearance.theme==='system'){ applyTheme('system'); }});
+
+function updateVH(){
+  const vh=window.visualViewport? window.visualViewport.height : window.innerHeight;
+  document.documentElement.style.setProperty('--vh', vh+"px");
+  const active=document.activeElement;
+  if(active && typeof active.scrollIntoView==='function'){
+    active.scrollIntoView({block:'center'});
+  }
+}
+if(window.visualViewport){
+  visualViewport.addEventListener('resize', updateVH);
+  visualViewport.addEventListener('scroll', updateVH);
+}
+window.addEventListener('resize', updateVH);
+updateVH();
 
 /* Palette */
 function applyPalette(p){
