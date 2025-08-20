@@ -1,4 +1,38 @@
+// storage & offline bootstrap
+import {
+  initStorage,
+  loadState,
+  saveState,
+  exportBackup,
+  importBackup,
+  clearAll
+} from "./src/storage/storage.js";
+
 const BUILD_HASH = "1";
+
+// boot persistence layer before registering service worker
+await initStorage();
+const persisted = await loadState();
+window.appState = persisted || {};
+
+function triggerSave(reason) {
+  if (!window.appState) return;
+  saveState(window.appState, { reason });
+}
+
+// autosave events
+["input", "change", "blur"].forEach(evt => {
+  document.addEventListener(evt, () => triggerSave(evt), true);
+});
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") triggerSave("visibilitychange");
+});
+window.addEventListener("beforeunload", () => triggerSave("beforeunload"));
+
+// expose backup helpers for UI
+window.exportBackup = exportBackup;
+window.importBackup = importBackup;
+window.clearAllData = clearAll;
 
 function showUpdateToast() {
   if (document.getElementById("updateToast")) return;
