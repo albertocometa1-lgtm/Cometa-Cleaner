@@ -125,7 +125,7 @@ li.task.due .date-badge, li.task.over .date-badge, li.task.done .date-badge{ bor
 .btn.secondary{ --btn-bg-color:var(--accent-color-2); border-color:var(--accent-color-2) }
 .btn-danger{ --btn-bg-color:var(--danger-color); border-color:var(--danger-color) }
 .btn.icon{ padding:6px; min-height:32px; display:flex; align-items:center; justify-content:center; }
-.icon-btn{ background:none; border:none; padding:6px; display:flex; align-items:center; justify-content:center; color:var(--btn-icon-color); cursor:pointer; }
+.icon-btn{ background:none; border:none; padding:6px; display:flex; align-items:center; justify-content:center; color:var(--btn-icon-color); cursor:pointer; min-width:44px; min-height:44px; }
 .icon-btn:hover{ background:var(--accent-color-2); border-radius:6px; }
 .icon-btn:active{ background:var(--accent-color); color:var(--icon-on-bg); }
 .icon-btn:focus-visible{ outline:2px solid var(--accent-color); outline-offset:2px; }
@@ -185,21 +185,30 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
 .filter-grid .full{grid-column:1/-1;}
 .filter-box label{font-weight:600;font-size:var(--fs-2);display:flex;flex-direction:column;gap:4px;}
 .filter-box label.check{flex-direction:row;align-items:center;min-height:44px;padding:4px 8px;border:1px solid var(--border-color);border-radius:12px;}
-.filter-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:16px;}
-@media(max-width:480px){.filter-grid{grid-template-columns:1fr;}}
+ .filter-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:16px;}
+ @media(max-width:480px){.filter-grid{grid-template-columns:1fr;}}
 
-.sheet{
-.sheet{
-  position:fixed; z-index:5000;
-  left:0; right:0; top:clamp(56px, 8svh, 120px); top:clamp(56px, 8dvh, 120px); bottom:0;
-  width:100%; max-height:calc(100svh - clamp(56px, 8svh, 120px)); max-height:calc(100dvh - clamp(56px, 8dvh, 120px));
-  padding-top:var(--safe-top);
-  background:var(--surface-color); border:1px solid var(--border-color);
-  border-radius:12px 12px 0 0; box-shadow:0 -4px 16px rgba(0,0,0,.1);
-  display:none; overflow-y:auto;
+/* Drawer modale (bottom sheet per filtri, editor, calendario) */
+.drawer{ position:fixed; inset:0; z-index:150; display:none; }
+.drawer.open{ display:block; }
+.drawer .scrim{ position:absolute; inset:0; background:rgba(0,0,0,.35); }
+.drawer .panel{
+  position:absolute; left:0; right:0; bottom:0;
+  max-height:90svh; max-height:90dvh;
+  background:var(--surface-color);
+  border-top:1px solid var(--border-color);
+  box-shadow:0 -4px 16px rgba(0,0,0,.1);
+  transform:translateY(100%);
+  transition:transform .18s ease;
+  padding:14px;
+  overflow:auto;
+  border-radius:16px 16px 0 0;
+  overscroll-behavior:contain;
+  padding-bottom:calc(16px + var(--safe-bottom));
 }
-.sheet header{ position:sticky; top:0; background:var(--surface-color); padding:calc(12px + var(--safe-top)) 16px 12px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border-color); }
-.sheet .content{ padding:12px 16px calc(16px + var(--safe-bottom)); }
+.drawer.open .panel{ transform:none; }
+.drawer .panel header{ position:sticky; top:0; background:var(--surface-color); padding:calc(12px + var(--safe-top)) 16px 12px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border-color); }
+.drawer .panel .content{ padding:12px 16px calc(16px + var(--safe-bottom)); }
 
 /* Task full-screen view */
 .task-view{
@@ -314,7 +323,8 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
   position:absolute; top:8px; right:8px; font-size:11px; padding:3px 6px; border-radius:999px; border:1px solid var(--border-color); background:var(--accent-color-2);
 }
 .cal-cell.muted{ opacity:.55; }
-.cal-list{ margin-top:12px; }
+.cal-cell.today{ border:2px solid var(--accent-color); }
+.cal-cell.selected{ outline:2px solid var(--accent-color-2); }
 .cal-empty{ padding:12px; text-align:center; opacity:.8; }
 
 /* Accordion moderno (Impostazioni, un solo open alla volta) */
@@ -349,6 +359,9 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
   <button id="toggleFilters" class="icon-btn" aria-label="Apri filtri" role="button">
     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 4h18l-7 8v6l-4 2v-8z"/></svg>
   </button>
+  <button id="addTaskBtn" class="icon-btn" aria-label="Nuova pulizia">
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
   <span class="user-pill" id="userPill">
     <img id="avatar" class="avatar" alt="">
     <strong id="who">Utente</strong>
@@ -379,7 +392,6 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
       <button id="calAdd" class="btn primary" style="margin-left:auto">Aggiungi pulizie</button>
     </div>
     <div id="calGrid" class="cal-grid" aria-label="Calendario mensile"></div>
-    <div id="calDayList" class="cal-list"></div>
   </section>
 
   <!-- VIEW: CLASSIFICA -->
@@ -498,7 +510,7 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
 <!-- Filters Drawer -->
 <div id="filtersDrawer" class="drawer" aria-hidden="true">
   <div class="scrim" id="filtersScrim"></div>
-  <div class="panel" role="dialog" aria-label="Filtri">
+  <div class="panel" role="dialog" aria-modal="true" aria-label="Filtri">
     <h3>Filtri</h3>
     <form class="filter-box">
       <div class="filter-grid">
@@ -534,8 +546,22 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
   </div>
 </div>
 
-<!-- Editor sheet -->
-<div id="sheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+<!-- Calendar Day drawer -->
+<div id="dayDrawer" class="drawer" aria-hidden="true">
+  <div class="scrim" id="dayScrim"></div>
+  <div class="panel" role="dialog" aria-modal="true" aria-label="Pulizie del giorno">
+    <h3 id="dayTitle"></h3>
+    <div id="dayList"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:12px;">
+      <button id="dayAddBtn" class="btn primary">Nuova</button>
+    </div>
+  </div>
+</div>
+
+<!-- Editor drawer -->
+<div id="editorDrawer" class="drawer" aria-hidden="true">
+  <div class="scrim" id="editorScrim"></div>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
   <header>
     <h3 id="sheetTitle" style="margin:0;flex:1">Nuova pulizia</h3>
     <button id="sheetClose" class="btn">Chiudi</button>
@@ -592,6 +618,7 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
         <button id="btnSave" class="btn primary" type="submit">Salva</button>
       </div>
     </form>
+  </div>
   </div>
 </div>
 
@@ -693,8 +720,31 @@ function esc(str){
   const map = {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"};
   return String(str).replace(/[&<>"']/g, m => map[m]);
 }
+let lastFocused=null, trapPanel=null;
+function trapFocus(panel){
+  lastFocused=document.activeElement;
+  trapPanel=panel;
+  const focusables=panel.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])');
+  const first=focusables[0], last=focusables[focusables.length-1];
+  function loop(e){
+    if(e.key!=='Tab') return;
+    if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+  }
+  panel.addEventListener('keydown', loop);
+  panel._trapLoop=loop;
+  first && first.focus();
+}
+function releaseFocus(){
+  if(trapPanel){
+    trapPanel.removeEventListener('keydown', trapPanel._trapLoop);
+    trapPanel=null;
+  }
+  if(lastFocused) lastFocused.focus();
+}
 const logoEl=byId("appLogo");
 const avatarEl=byId("avatar"), whoEl=byId("who");
+const addTaskBtn=byId("addTaskBtn");
 const refreshBtn = byId("refreshBtn");
 if(refreshBtn){
   refreshBtn.addEventListener("click", () => {
@@ -907,10 +957,21 @@ document.querySelectorAll(".tab").forEach(b=> b.addEventListener("click", ()=>{
   renderTasks();
 }));
 
-const drawer=byId("filtersDrawer"), scrim=byId("filtersScrim"), closeFilters=byId("closeFilters"), toggleFilters=byId("toggleFilters"), chipsEl=byId("activeChips");
-toggleFilters.addEventListener("click", ()=> drawer.classList.add("open"));
-scrim.addEventListener("click", ()=> drawer.classList.remove("open"));
-closeFilters.addEventListener("click", ()=>{ drawer.classList.remove("open"); renderChips(); renderTasks(); });
+const filtersDrawer=byId("filtersDrawer"), filtersScrim=byId("filtersScrim"), closeFilters=byId("closeFilters"), toggleFilters=byId("toggleFilters"), chipsEl=byId("activeChips");
+function openFilters(){
+  filtersDrawer.classList.add("open");
+  filtersDrawer.setAttribute("aria-hidden","false");
+  trapFocus(filtersDrawer.querySelector(".panel"));
+}
+function closeFiltersDrawer(){
+  filtersDrawer.classList.remove("open");
+  filtersDrawer.setAttribute("aria-hidden","true");
+  releaseFocus();
+}
+toggleFilters.addEventListener("click", openFilters);
+filtersScrim.addEventListener("click", closeFiltersDrawer);
+closeFilters.addEventListener("click", ()=>{ closeFiltersDrawer(); renderChips(); renderTasks(); });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape" && filtersDrawer.classList.contains("open")) closeFiltersDrawer(); });
 const filterInputs={
   q: byId("f-q"), room: byId("f-room"),
   state: byId("f-state"), doneToday: byId("f-done-today"), notDoneToday: byId("f-not-done-today"),
@@ -1049,7 +1110,7 @@ function renderTasks(){
 }
 
 /* ===== EDITOR ===== */
-const sheet=byId("sheet"), sheetTitle=byId("sheetTitle"), sheetClose=byId("sheetClose");
+const editorDrawer=byId("editorDrawer"), editorScrim=byId("editorScrim"), sheetTitle=byId("sheetTitle"), sheetClose=byId("sheetClose");
 const form=byId("taskForm");
 const fId=byId("f-id"), fTitle=byId("f-title"), fStartAt=byId("f-startAt"),
       fRepEnabled=byId("f-rep-enabled"), fRepEvery=byId("f-rep-every"), fRepUnit=byId("f-rep-unit"),
@@ -1105,7 +1166,9 @@ function handlePhotoFile(file){
   r.readAsDataURL(file);
 }
 function openEditor(task=null){
-  sheet.style.display="block";
+  editorDrawer.classList.add("open");
+  editorDrawer.setAttribute("aria-hidden","false");
+  trapFocus(editorDrawer.querySelector(".panel"));
   if(task){
     sheetTitle.textContent="Modifica pulizia";
     fId.value=task.id;
@@ -1136,8 +1199,14 @@ function openEditor(task=null){
     btnDelete.style.display="none";
   }
 }
-function closeEditor(){ sheet.style.display="none"; }
+function closeEditor(){
+  editorDrawer.classList.remove("open");
+  editorDrawer.setAttribute("aria-hidden","true");
+  releaseFocus();
+}
 sheetClose.addEventListener("click", closeEditor);
+editorScrim.addEventListener("click", closeEditor);
+document.addEventListener("keydown", e=>{ if(e.key==="Escape" && editorDrawer.classList.contains("open")) closeEditor(); });
 
 function openTaskView(task){
   tvTitle.textContent = task.title || task.name;
@@ -1490,8 +1559,10 @@ function switchView(tab){
 menuItems.forEach(b=> b.addEventListener("click", ()=>{ closeMenu(); switchView(b.dataset.tab); }));
 
 /* ===== Calendario ===== */
-const calGrid=byId("calGrid"), calTitle=byId("calTitle"), calDayList=byId("calDayList");
+const calGrid=byId("calGrid"), calTitle=byId("calTitle");
 const calPrev=byId("calPrev"), calNext=byId("calNext"), calToday=byId("calToday"), calAdd=byId("calAdd");
+const dayDrawer=byId("dayDrawer"), dayScrim=byId("dayScrim"), dayTitle=byId("dayTitle"), dayList=byId("dayList"), dayAddBtn=byId("dayAddBtn");
+let selectedCell=null;
 
 let calRef = new Date();
 function setCalTo(year, month){ calRef = new Date(year, month, 1); }
@@ -1500,6 +1571,7 @@ function daysInMonth(y,m){ return new Date(y, m+1, 0).getDate(); }
 
 function renderCalendar(){
   calTitle.textContent = monthLabel(calRef).replace(/^\w/, c=>c.toUpperCase());
+  closeDayDrawer();
   const y = calRef.getFullYear(), m = calRef.getMonth();
   const firstDow = new Date(y, m, 1).getDay();
   const startOffset = (firstDow+6)%7;
@@ -1524,32 +1596,25 @@ function renderCalendar(){
 
     const cell=document.createElement("div");
     cell.className="cal-cell"+(muted?" muted":"");
+    if(!muted && isSameDay(d,new Date())) cell.classList.add("today");
     cell.setAttribute("data-date", d.toISOString().slice(0,10));
     cell.innerHTML = `<div class="cal-daynum">${d.getDate()}</div>${count? `<div class="cal-badge">${count}</div>`:""}`;
-    cell.addEventListener("click", ()=> renderCalendarDayList(d));
+    cell.addEventListener("click", ()=> openDayDrawer(d, cell));
     cells.push(cell);
   }
   cells.forEach(c=>calGrid.appendChild(c));
 
-  const today = new Date();
-  if(today.getFullYear()===y && today.getMonth()===m){
-    renderCalendarDayList(today);
-  }else{
-    calDayList.innerHTML = `<div class="cal-empty">Tocca un giorno per vedere i dettagli</div>`;
-  }
+  selectedCell=null;
 }
-function renderCalendarDayList(d){
-  const items = state.tasks.filter(t=> occursOnDay(t, d));
-  const title = d.toLocaleDateString('it-IT', { weekday:'long', day:'2-digit', month:'2-digit' });
-  if(!items.length){
-    calDayList.innerHTML = `<div class="cal-empty"><strong>${title}</strong><br>Nessuna pulizia prevista</div>`;
-    return;
-  }
-  const list = items.sort((a,b)=> (a.priority-b.priority) || (a.title||"").localeCompare(b.title||""))
-    .map(t=>{
-      const desc = t.notes ? ` • ${esc(t.notes)}` : "";
-      const hasPhotos = t.photo ? ' • 📷1' : '';
-      return `<li class="task future" style="list-style:none; margin:8px 0; padding:10px; border-radius:10px; border:1px solid var(--border-color);">
+function openDayDrawer(d, cell){
+  const items = state.tasks.filter(t=> occursOnDay(t,d));
+  dayTitle.textContent = d.toLocaleDateString('it-IT', { weekday:'long', day:'2-digit', month:'2-digit' });
+  if(items.length){
+    const list = items.sort((a,b)=> (a.priority-b.priority) || (a.title||"").localeCompare(b.title||""))
+      .map(t=>{
+        const desc = t.notes ? ` • ${esc(t.notes)}` : "";
+        const hasPhotos = t.photo ? ' • 📷1' : '';
+        return `<li class="task future" style="list-style:none; margin:8px 0; padding:10px; border-radius:10px; border:1px solid var(--border-color);">
   <div style="display:flex; gap:8px; align-items:center;">
     <div class="head-main" style="flex:1; min-width:0;">
       <div class="title">${esc(t.title||t.name)}</div>
@@ -1558,27 +1623,54 @@ function renderCalendarDayList(d){
     <button class="btn" data-edit="${t.id}">Modifica</button>
   </div>
 </li>`;
-    }).join("");
-  calDayList.innerHTML = `<div style="margin-top:12px;"><strong>${esc(title)}</strong></div><ul style="padding:0;margin:6px 0 0 0;">${list}</ul>`;
-  calDayList.querySelectorAll('button[data-edit]').forEach(b=>{
-    b.addEventListener('click', ()=>{
-      const t = state.tasks.find(x=>x.id===b.getAttribute('data-edit'));
-      if(t) openEditor(t);
+      }).join("");
+    dayList.innerHTML = `<ul style="padding:0;margin:6px 0 0 0; list-style:none;">${list}</ul>`;
+    dayList.querySelectorAll('button[data-edit]').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const t = state.tasks.find(x=>x.id===b.getAttribute('data-edit'));
+        if(t){ closeDayDrawer(); openEditor(t); }
+      });
     });
-  });
+  }else{
+    dayList.innerHTML = `<div class="cal-empty">Nessuna pulizia prevista</div>`;
+  }
+  if(selectedCell) selectedCell.classList.remove('selected');
+  selectedCell = cell;
+  cell.classList.add('selected');
+  dayDrawer.classList.add('open');
+  dayDrawer.setAttribute('aria-hidden','false');
+  trapFocus(dayDrawer.querySelector('.panel'));
 }
+function closeDayDrawer(){
+  dayDrawer.classList.remove('open');
+  dayDrawer.setAttribute('aria-hidden','true');
+  if(selectedCell) selectedCell.classList.remove('selected');
+  releaseFocus();
+}
+dayScrim.addEventListener('click', closeDayDrawer);
+dayAddBtn.addEventListener('click', ()=>{ closeDayDrawer(); openEditor(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && dayDrawer.classList.contains('open')) closeDayDrawer(); });
 calPrev.addEventListener("click", ()=>{ setCalTo(calRef.getFullYear(), calRef.getMonth()-1); renderCalendar(); });
 calNext.addEventListener("click", ()=>{ setCalTo(calRef.getFullYear(), calRef.getMonth()+1); renderCalendar(); });
 calToday.addEventListener("click", ()=>{ const n=new Date(); setCalTo(n.getFullYear(), n.getMonth()); renderCalendar(); });
 calAdd.addEventListener("click", ()=> openEditor());
+addTaskBtn.addEventListener("click", ()=> openEditor());
 
 /* ===== Accordion: un solo menù aperto ===== */
 const acc = document.getElementById("settingsAccordion");
 if(acc){
-  acc.querySelectorAll("details").forEach(d=>{
+  acc.querySelectorAll("details").forEach((d,i)=>{
+    const s = d.querySelector("summary");
+    const pid = `settings-panel-${i}`;
+    d.setAttribute('role','region');
+    d.id = pid;
+    s.setAttribute('role','button');
+    s.setAttribute('aria-controls', pid);
+    s.setAttribute('aria-expanded', d.open);
     d.addEventListener("toggle", ()=>{
+      s.setAttribute('aria-expanded', d.open);
       if(d.open){
-        acc.querySelectorAll("details").forEach(o=>{ if(o!==d) o.open=false; });
+        acc.querySelectorAll("details").forEach(o=>{ if(o!==d){ o.open=false; const so=o.querySelector('summary'); so.setAttribute('aria-expanded', o.open); } });
       }
     });
   });
