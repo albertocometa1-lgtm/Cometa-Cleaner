@@ -8,11 +8,50 @@ import {
   clearAll
 } from "./src/storage/storage.js";
 
+const loaderEl = document.getElementById("loaderOverlay");
+const mainEl = document.querySelector("main");
+let loaderCount = 0;
+let loaderTimer;
+
+function showLoader(){
+  loaderCount++;
+  if(loaderCount === 1){
+    loaderTimer = setTimeout(()=>{
+      loaderEl.classList.add("is-active");
+      loaderEl.removeAttribute("aria-hidden");
+      mainEl.setAttribute("aria-busy","true");
+    },200);
+  }
+}
+function hideLoader(){
+  loaderCount = Math.max(0, loaderCount-1);
+  if(loaderCount === 0){
+    clearTimeout(loaderTimer);
+    loaderEl.classList.remove("is-active");
+    loaderEl.setAttribute("aria-hidden","true");
+    mainEl.removeAttribute("aria-busy");
+  }
+}
+window.showLoader = showLoader;
+window.hideLoader = hideLoader;
+
+const nativeFetch = window.fetch;
+window.fetch = async (...args) => {
+  showLoader();
+  try {
+    return await nativeFetch(...args);
+  } finally {
+    hideLoader();
+  }
+};
+
 const BUILD_HASH = "1";
 
+showLoader();
 // boot persistence layer before registering service worker
 await initStorage();
 const persisted = await loadState();
+hideLoader();
 window.appState = persisted || {};
 
 function triggerSave(reason) {

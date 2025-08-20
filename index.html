@@ -28,7 +28,9 @@
   --delta-pos:#117733; --delta-neg:#B00020;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-top: env(safe-area-inset-top, 0px);
-  --bottom-nav-h: 80px; /* viene aggiornato da JS */
+  --icon-on-bg: var(--text-color);
+  --icon-on-surface: var(--text-color);
+  --btn-icon-color: var(--icon-on-surface);
 }
 @media (prefers-color-scheme: dark){
   :root{
@@ -61,14 +63,14 @@ html,body{
 }
 html{
   scroll-padding-top:calc(56px + var(--safe-top));
-  scroll-padding-bottom:var(--bottom-nav-h);
+  scroll-padding-bottom:var(--safe-bottom);
 }
 body{
   background:var(--bg-color);
   color:var(--text-color);
   line-height:1.45;
   overflow-x:hidden;
-  padding-bottom:calc(var(--bottom-nav-h, 80px) + var(--safe-bottom));
+  padding-bottom:var(--safe-bottom);
 }
 header{
   position:sticky; top:0; z-index:30;
@@ -81,7 +83,7 @@ header h1{font-size:var(--fs-1); margin:0; flex:1; white-space:nowrap; overflow:
 .logo{width:26px;height:26px;border-radius:6px;object-fit:cover;border:1px solid var(--border-color); background:var(--accent-color);}
 .user-pill{display:flex; align-items:center; gap:8px; border:1px solid var(--border-color); padding:6px 10px; border-radius:999px; background:var(--accent-color-2);}
 .avatar{width:20px; height:20px; border-radius:50%; object-fit:cover; background:var(--accent-color-2);}
-.container{max-width:860px; margin:0 auto; padding:12px; display:flex; flex-direction:column; min-height:calc(100svh - (56px + var(--safe-top)) - var(--bottom-nav-h)); min-height:calc(100dvh - (56px + var(--safe-top)) - var(--bottom-nav-h));}
+.container{max-width:860px; margin:0 auto; padding:12px; display:flex; flex-direction:column; min-height:calc(100svh - (56px + var(--safe-top))); min-height:calc(100dvh - (56px + var(--safe-top)));}
 .view{display:none; flex-direction:column; flex:1;}
 .view.active{display:flex;}
 #viewTasks{min-height:0;}
@@ -123,6 +125,22 @@ li.task.due .date-badge, li.task.over .date-badge, li.task.done .date-badge{ bor
 .btn.secondary{ --btn-bg-color:var(--accent-color-2); border-color:var(--accent-color-2) }
 .btn-danger{ --btn-bg-color:var(--danger-color); border-color:var(--danger-color) }
 .btn.icon{ padding:6px; min-height:32px; display:flex; align-items:center; justify-content:center; }
+.icon-btn{ background:none; border:none; padding:6px; display:flex; align-items:center; justify-content:center; color:var(--btn-icon-color); cursor:pointer; }
+.icon-btn:hover{ background:var(--accent-color-2); border-radius:6px; }
+.icon-btn:active{ background:var(--accent-color); color:var(--icon-on-bg); }
+.icon-btn:focus-visible{ outline:2px solid var(--accent-color); outline-offset:2px; }
+.fab{ position:fixed; bottom:calc(16px + var(--safe-bottom)); right:calc(16px + env(safe-area-inset-right)); width:56px; height:56px; border-radius:50%; background:var(--accent-color); color:var(--icon-on-bg); display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow); border:none; cursor:pointer; }
+.fab:focus-visible{ outline:2px solid var(--accent-color-2); outline-offset:2px; }
+.menu-overlay{ position:fixed; inset:0; z-index:50; background:rgba(0,0,0,.4); display:none; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+.menu-overlay.open{ display:flex; align-items:center; justify-content:center; }
+.menu-panel{ background:var(--surface-color); padding:20px; border-radius:12px; display:flex; flex-direction:column; gap:10px; box-shadow:var(--shadow); }
+.menu-item{ width:100%; }
+.menu-item.active{ --btn-bg-color:var(--accent-color); background:var(--btn-bg-color); color:var(--btn-text-color); border-color:var(--accent-color); }
+.loader{ position:fixed; inset:0; z-index:100; background:var(--bg-color); display:none; align-items:center; justify-content:center; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+.loader.is-active{ display:flex; }
+.loader-logo{ width:72px; height:72px; animation:spin 1.2s linear infinite; }
+@keyframes spin{ from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+.sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 .empty{ padding:24px; text-align:center; color:var(--text-color); opacity:.9; font-size:var(--fs-2) }
 
 /* Forms */
@@ -170,16 +188,7 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
 .filter-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:16px;}
 @media(max-width:480px){.filter-grid{grid-template-columns:1fr;}}
 
-/* Bottom nav */
-.bottom-nav{
-  position:fixed; left:0; right:0; bottom:0; z-index:40; background:var(--surface-color); border-top:1px solid var(--border-color); box-shadow:0 -1px 2px rgba(0,0,0,.05);
-  padding:8px max(12px, env(safe-area-inset-left)) calc(8px + var(--safe-bottom)) max(12px, env(safe-area-inset-right)); display:flex; gap:10px; justify-content:space-around;
-}
-.tabbtn{ flex:1; padding:10px 12px; border-radius:14px; border:1px solid var(--border-color); background:var(--surface-color); font-weight:700; cursor:pointer; min-height:44px;}
-.tabbtn:focus-visible{ outline:2px solid var(--accent-color); outline-offset:2px; }
-.tabbtn.active{ border-color:var(--accent-color); --btn-bg-color:var(--accent-color); background:var(--btn-bg-color); color:var(--btn-text-color) }
-
-/* Sheet editor: overlay alto, copre calendario */
+.sheet{
 .sheet{
   position:fixed; z-index:5000;
   left:0; right:0; top:clamp(56px, 8svh, 120px); top:clamp(56px, 8dvh, 120px); bottom:0;
@@ -257,10 +266,10 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
 .file-btn input[type="file"]{ display:none; }
 .small-note{ font-size:12px; opacity:.7; margin-top:8px; }
 
-/* Toast (si posiziona sopra la bottom-nav reale) */
+/* Toast */
 .toast-wrap{
   position:fixed; left:50%; transform:translateX(-50%);
-  bottom:calc(var(--bottom-nav-h, 80px) + var(--safe-bottom));
+  bottom:var(--safe-bottom);
   z-index:200; display:flex; flex-direction:column; gap:8px; align-items:center;
 }
 .toast{ background:var(--toast-bg-color); color:var(--toast-text-color); padding:10px 14px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,.25); font-weight:600; max-width:90vw; }
@@ -337,6 +346,9 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
 <header>
   <img id="appLogo" class="logo" alt="Logo">
   <h1 id="appTitle">Pulizie di Casa</h1>
+  <button id="toggleFilters" class="icon-btn" aria-label="Apri filtri" role="button">
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 4h18l-7 8v6l-4 2v-8z"/></svg>
+  </button>
   <span class="user-pill" id="userPill">
     <img id="avatar" class="avatar" alt="">
     <strong id="who">Utente</strong>
@@ -349,7 +361,6 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
     <div class="tabs">
       <button class="tab active" data-scope="oggi">Oggi</button>
       <button class="tab" data-scope="tutte">Tutte</button>
-      <button class="btn" id="toggleFilters" style="margin-left:auto">Filtri</button>
     </div>
     <div class="chips" id="activeChips" style="margin:0 0 8px 0"></div>
     <ul id="list"></ul>
@@ -466,13 +477,23 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
   </section>
 </main>
 
-<!-- Bottom Nav -->
-<nav class="bottom-nav">
-  <button class="tabbtn active" data-tab="tasks">Da Fare</button>
-  <button class="tabbtn" data-tab="calendar">Calendario</button>
-  <button class="tabbtn" data-tab="rank">Classifica</button>
-  <button class="tabbtn" data-tab="settings">Impostazioni</button>
-</nav>
+<button id="menuFab" class="fab" aria-label="Apri menù">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+</button>
+
+<div id="menuOverlay" class="menu-overlay" aria-hidden="true">
+  <div class="menu-panel" role="menu" aria-modal="true">
+    <button class="btn menu-item" data-tab="tasks" role="menuitem">Pulizie</button>
+    <button class="btn menu-item" data-tab="calendar" role="menuitem">Calendario</button>
+    <button class="btn menu-item" data-tab="rank" role="menuitem">Classifica</button>
+    <button class="btn menu-item" data-tab="settings" role="menuitem">Impostazioni</button>
+  </div>
+</div>
+
+<div id="loaderOverlay" class="loader" aria-hidden="true">
+  <img src="icons/icon-192.png" alt="" class="loader-logo">
+  <span class="sr-only" aria-live="polite">Caricamento…</span>
+</div>
 
 <!-- Filters Drawer -->
 <div id="filtersDrawer" class="drawer" aria-hidden="true">
@@ -486,17 +507,6 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
         </label>
         <label>Stanza
           <select id="f-room"></select>
-        </label>
-        <label>Assegnatario
-          <select id="f-user"></select>
-        </label>
-        <label>Priorità
-          <select id="f-pri">
-            <option value="">(tutte)</option>
-            <option value="1">Alta</option>
-            <option value="2">Media</option>
-            <option value="3">Bassa</option>
-          </select>
         </label>
         <label>Stato
           <select id="f-state">
@@ -729,7 +739,7 @@ function updateTextContrast(){
   const text=bestTextColor(bg);
   root.style.setProperty('--text-color', text);
   root.style.setProperty('--placeholder-color', text==='#000000'? 'rgba(0,0,0,0.6)':'rgba(255,255,255,0.6)');
-  document.querySelectorAll('.btn, .tab.active, .tabbtn.active').forEach(el=>{
+  document.querySelectorAll('.btn, .tab.active, .menu-item.active').forEach(el=>{
     const bgc=getComputedStyle(el).getPropertyValue('--btn-bg-color').trim()||bg;
     el.style.setProperty('--btn-text-color', bestTextColor(bgc));
   });
@@ -902,7 +912,7 @@ toggleFilters.addEventListener("click", ()=> drawer.classList.add("open"));
 scrim.addEventListener("click", ()=> drawer.classList.remove("open"));
 closeFilters.addEventListener("click", ()=>{ drawer.classList.remove("open"); renderChips(); renderTasks(); });
 const filterInputs={
-  q: byId("f-q"), room: byId("f-room"), user: byId("f-user"), pri: byId("f-pri"),
+  q: byId("f-q"), room: byId("f-room"),
   state: byId("f-state"), doneToday: byId("f-done-today"), notDoneToday: byId("f-not-done-today"),
   from: byId("f-from"), to: byId("f-to")
 };
@@ -911,16 +921,11 @@ Object.values(filterInputs).forEach(el=> el.addEventListener("input", ()=>{ rend
 function renderRoomFilters(){
   filterInputs.room.innerHTML=`<option value="">(tutte)</option>` + state.settings.rooms.map(r=>`<option value="${esc(r.name)}">${esc(r.name)}</option>`).join("");
 }
-function renderUserFilters(){
-  filterInputs.user.innerHTML=`<option value="">(tutti)</option>` + state.users.map(u=>`<option value="${esc(u.name)}">${esc(u.name)}</option>`).join("");
-}
 function renderChips(){
   const chips=[];
-  const {q,room,user,pri,state,doneToday,notDoneToday,from,to}=filterInputs;
+  const {q,room,state,doneToday,notDoneToday,from,to}=filterInputs;
   if(q.value) chips.push(`testo:“${q.value}”`);
   if(room.value) chips.push(`stanza:${room.value}`);
-  if(user.value) chips.push(`utente:${user.value}`);
-  if(pri.value) chips.push(`prio:${pri.value}`);
   if(state.value) chips.push(`stato:${state.value}`);
   if(doneToday.checked) chips.push("completate:oggi");
   if(notDoneToday.checked) chips.push("non completate:oggi");
@@ -951,7 +956,7 @@ function baseTasksForScope(){
   return tasks;
 }
 function applyFilters(list){
-  const {q,room,user,pri,state,doneToday,notDoneToday,from,to}=filterInputs;
+  const {q,room,state,doneToday,notDoneToday,from,to}=filterInputs;
   const qv=q.value.trim().toLowerCase();
   const fromD=from.value? new Date(from.value+"T00:00:00"):null;
   const toD=to.value? new Date(to.value+"T23:59:59"):null;
@@ -959,8 +964,6 @@ function applyFilters(list){
     const s=statusForTask(t);
     if(qv && !((t.title||t.name||"").toLowerCase().includes(qv) || (t.notes||"").toLowerCase().includes(qv))) return false;
     if(room.value && t.room!==room.value) return false;
-    if(user.value && t.assignee!==user.value) return false;
-    if(pri.value && String(t.priority)!==String(pri.value)) return false;
     if(state.value && s.code!==state.value) return false;
     const last = t.lastDone ? new Date(t.lastDone) : null;
     const isDoneToday = last ? isSameDay(last,new Date()) : false;
@@ -975,7 +978,7 @@ function applyFilters(list){
   });
 }
 function renderTasks(){
-  renderRoomSelect(); renderAssigneeSelects(); renderRoomFilters(); renderUserFilters();
+  renderRoomSelect(); renderAssigneeSelects(); renderRoomFilters();
   listEl.innerHTML=""; emptyEl.style.display="none";
   const tasks = applyFilters(baseTasksForScope()).sort((a,b)=>{
     const sa=statusForTask(a), sb=statusForTask(b);
@@ -1445,19 +1448,46 @@ restoreFile.addEventListener("change", async (e)=>{
 });
 byId("clearDone").addEventListener("click", ()=>{ state.tasks=state.tasks.filter(t=>!t.done); save(); renderTasks(); renderCalendar(); showToast("🧹 Completate cancellate"); });
 
-/* ===== Bottom Nav (con Calendario) ===== */
+/* ===== Navigazione Menù ===== */
 const viewTasks=byId("viewTasks"), viewCalendar=byId("viewCalendar"), viewRank=byId("viewRank"), viewSettings=byId("viewSettings");
-document.querySelectorAll(".tabbtn").forEach(b=> b.addEventListener("click", ()=>{
-  document.querySelectorAll(".tabbtn").forEach(x=>x.classList.remove("active"));
-  b.classList.add("active");
-  const tab=b.dataset.tab;
+let currentTab="tasks";
+const menuOverlay=byId("menuOverlay"), menuFab=byId("menuFab");
+const menuItems=document.querySelectorAll(".menu-item");
+
+function openMenu(){
+  menuOverlay.classList.add("open");
+  menuOverlay.removeAttribute("aria-hidden");
+  const active=Array.from(menuItems).find(i=>i.dataset.tab===currentTab);
+  menuItems.forEach(i=>i.classList.toggle("active", i===active));
+  (active||menuItems[0]).focus();
+}
+function closeMenu(){
+  menuOverlay.classList.remove("open");
+  menuOverlay.setAttribute("aria-hidden","true");
+  menuFab.focus();
+}
+menuFab.addEventListener("click", openMenu);
+menuOverlay.addEventListener("click", e=>{ if(e.target===menuOverlay) closeMenu(); });
+menuOverlay.addEventListener("keydown", e=>{
+  if(e.key==="Escape") return closeMenu();
+  if(e.key==="Tab"){
+    const f=Array.from(menuOverlay.querySelectorAll('button'));
+    const first=f[0]; const last=f[f.length-1];
+    if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+  }
+});
+
+function switchView(tab){
   [viewTasks,viewCalendar,viewRank,viewSettings].forEach(v=>v.classList.remove("active"));
   if(tab==="tasks"){ viewTasks.classList.add("active"); byId("appTitle").textContent="Pulizie di Casa"; }
   if(tab==="calendar"){ viewCalendar.classList.add("active"); byId("appTitle").textContent="Calendario Pulizie"; renderCalendar(); }
   if(tab==="rank"){ viewRank.classList.add("active"); byId("appTitle").textContent="Classifica"; renderLeader(); renderHistory(); }
   if(tab==="settings"){ viewSettings.classList.add("active"); byId("appTitle").textContent="Impostazioni"; }
+  currentTab = tab;
   window.scrollTo({top:0,behavior:"smooth"});
-}));
+}
+menuItems.forEach(b=> b.addEventListener("click", ()=>{ closeMenu(); switchView(b.dataset.tab); }));
 
 /* ===== Calendario ===== */
 const calGrid=byId("calGrid"), calTitle=byId("calTitle"), calDayList=byId("calDayList");
@@ -1554,20 +1584,6 @@ if(acc){
   });
 }
 
-/* ===== Adattamento spazio sotto in base alla bottom-nav reale ===== */
-function adaptBottomInset(){
-  const nav = document.querySelector('.bottom-nav');
-  const h = nav ? Math.ceil(nav.getBoundingClientRect().height) : 80;
-  const extra = 12;
-  document.documentElement.style.setProperty('--bottom-nav-h', (h + extra) + 'px');
-}
-window.addEventListener('resize', adaptBottomInset);
-window.addEventListener('orientationchange', adaptBottomInset);
-if(window.visualViewport){
-  visualViewport.addEventListener('resize', adaptBottomInset);
-}
-document.fonts && document.fonts.ready && document.fonts.ready.then(adaptBottomInset);
-
 /* ===== Boot ===== */
 function boot(){
   applyPalette(state.appearance.palette||APP_PALETTES[3]);
@@ -1577,13 +1593,11 @@ function boot(){
   renderRoomSelect(); renderAssigneeSelects();
   renderUsersList(); renderRooms();
   renderAppPalettes();
-  renderRoomFilters(); renderUserFilters(); renderChips();
+  renderRoomFilters(); renderChips();
   renderTasks(); renderLeader(); renderHistory();
   applyDailyMalus();
   const n=new Date(); setCalTo(n.getFullYear(), n.getMonth());
 
-  // calcola lo spazio per evitare il "taglio" in fondo
-  adaptBottomInset();
   updateTextContrast();
 
 }
