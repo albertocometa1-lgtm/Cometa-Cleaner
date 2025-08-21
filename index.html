@@ -742,12 +742,23 @@ const defaults={
   history:[],
   notified:{},
   score:{},
-  lastMalusDate:null
+  lastMalusDate:null,
+  attachments:{}
 };
 function migrate(d){
   if(!d.settings?.rooms){ d.settings={...(d.settings||{}), rooms:defaults.settings.rooms}; }
   if(!d.score) d.score={};
   if(!('lastMalusDate' in d)) d.lastMalusDate=null;
+  if(!d.attachments) d.attachments={};
+  if(Array.isArray(d.tasks)){
+    d.tasks.forEach(t=>{
+      if(t.photo && typeof t.photo === 'string' && t.photo.startsWith('data:')){
+        const id=crypto.randomUUID();
+        d.attachments[id]={id,cleaningId:t.id,url:t.photo,mime:(t.photo.split(';')[0]||'').slice(5)||'',size:0,createdAt:nowISO()};
+        t.photo=id;
+      }
+    });
+  }
   if(!d.users || Array.isArray(d.users)===false){ d.users = defaults.users; d.activeUserId="me"; }
   if(!d.appearance) d.appearance = defaults.appearance;
   if('bgTasks' in (d.appearance||{})) delete d.appearance.bgTasks;
@@ -1160,7 +1171,7 @@ function renderTasks(){
 
     const headMain=document.createElement("div"); headMain.className="head-main";
     const title=document.createElement("div"); title.className="title"; title.textContent=t.title || t.name;
-    const notesLine=document.createElement("div"); notesLine.className="notes-line"; const photoTag=t.photo?" 📷":""; notesLine.textContent = (t.notes||"")+photoTag;
+    const notesLine=document.createElement("div"); notesLine.className="notes-line"; const photoTag=(t.photo|| (t.photos && t.photos.length))?" 📷":""; notesLine.textContent = (t.notes||"")+photoTag;
     headMain.appendChild(title); headMain.appendChild(notesLine);
     const dateBadge=document.createElement("div"); dateBadge.className="date-badge"; dateBadge.textContent = s.next ? fmtDMY(s.next) : "--";
     const chev=document.createElement("div"); chev.className="chev"; chev.innerHTML=`<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-width="2" d="M9 6l6 6-6 6"/></svg>`;
@@ -1199,6 +1210,8 @@ const taskView=byId("taskView"), tvTitle=byId("tvTitle"), tvClose=byId("tvClose"
       tvMeta=byId("tvMeta"), tvNotes=byId("tvNotes"), tvPhotos=byId("tvPhotos"),
       tvNext=byId("tvNext"), tvActions=byId("tvActions");
 let photoData=null;
+let photoFile=null;
+let existingPhotoId=null;
 
 function renderRoomSelect(){
   if(!fRoomSel) return;
@@ -1232,7 +1245,7 @@ photoZone.addEventListener('dragover', e=>{ e.preventDefault(); photoZone.classL
 photoZone.addEventListener('dragleave', ()=> photoZone.classList.remove('hover'));
 photoZone.addEventListener('drop', e=>{ e.preventDefault(); photoZone.classList.remove('hover'); handlePhotoFile(e.dataTransfer.files[0]); });
 photoInput.addEventListener('change', ()=> handlePhotoFile(photoInput.files[0]));
-photoRemove.addEventListener('click', ()=>{ photoData=null; photoPreview.style.display='none'; photoInput.value=''; });
+photoRemove.addEventListener('click', ()=>{ photoData=null; photoFile=null; photoPreview.style.display='none'; photoInput.value=''; existingPhotoId=null; });
 function handlePhotoFile(file){
   if(!file) return;
   if(!/image\/(jpeg|png)/.test(file.type)){
@@ -1246,6 +1259,7 @@ function handlePhotoFile(file){
     return;
   }
   try{
+    photoFile=file;
     const r=new FileReader();
     r.onerror=e=>{
       console.error('Errore lettura foto', e);
@@ -1279,10 +1293,15 @@ function openEditor(task=null){
     repWeekdays.style.display = (fRepUnit.value==="weeks") ? "flex" : "none";
     const wds = task.repeat?.weekdays || [];
     repWeekdays.querySelectorAll('input').forEach(cb=>{ cb.checked = wds.includes(parseInt(cb.value,10)); });
-    photoData = task.photo || null;
+    existingPhotoId = task.photo || null;
+    if(existingPhotoId){
+      const att = state.attachments?.[existingPhotoId];
+      photoData = att ? att.url : null;
+    } else { photoData = null; }
     if(photoData){
       photoImg.src=photoData; photoPreview.style.display="block";
     }else{ photoPreview.style.display="none"; photoInput.value=""; }
+    photoFile=null;
     btnDelete.style.display="inline-flex";
   }else{
     sheetTitle.textContent="Nuova pulizia";
@@ -1292,7 +1311,7 @@ function openEditor(task=null){
     fRepEnabled.checked=false; fRepEvery.value=1; fRepUnit.value="days";
     repFields.style.display="none"; repWeekdays.style.display="none";
     repWeekdays.querySelectorAll('input').forEach(cb=>cb.checked=false);
-    photoData=null; photoInput.value=""; photoPreview.style.display="none";
+    photoData=null; photoFile=null; existingPhotoId=null; photoInput.value=""; photoPreview.style.display="none";
     btnDelete.style.display="none";
   }
 }
@@ -1334,9 +1353,10 @@ function openTaskView(task){
     tvPhotos.appendChild(im);
   };
   if(task.photo){
-    appendImg(task.photo);
+    const att = state.attachments?.[task.photo];
+    appendImg(att ? att.url : task.photo);
   }else if(task.photos && task.photos.length){
-    task.photos.forEach(src=> appendImg(src));
+    task.photos.forEach(id=>{ const att = state.attachments?.[id]; appendImg(att ? att.url : id); });
   } else {
     tvPhotos.textContent = 'Nessuna foto disponibile';
   }
@@ -1406,18 +1426,35 @@ form.addEventListener("submit", (e)=>{
       weekdays:fRepEnabled.checked && fRepUnit.value==="weeks" ? getSelectedWeekdays() : []
     },
     notes: fNotes.value.trim(),
-    photo: photoData,
+    photo: null,
     createdAt: fId.value ? prevTask?.createdAt : nowISO(),
     lastDone: fId.value ? (prevTask?.lastDone || null) : null,
     lastScore: fId.value ? (prevTask?.lastScore || 0) : 0,
     done: fId.value ? (prevTask?.done || false) : false
   };
 
+  let photoId = existingPhotoId;
+  if(photoData){
+    photoId = photoId || crypto.randomUUID();
+    state.attachments[photoId] = {
+      id: photoId,
+      cleaningId: data.id,
+      url: photoData,
+      mime: photoFile?.type || '',
+      size: photoFile?.size || 0,
+      createdAt: nowISO()
+    };
+  }else if(photoId){
+    delete state.attachments[photoId];
+    photoId = null;
+  }
+  data.photo = photoId;
+
   const idx=state.tasks.findIndex(t=>t.id===data.id);
   if(idx===-1){ state.tasks.push(data); showToast("➕ Pulizia aggiunta"); }
   else { state.tasks[idx]={...state.tasks[idx], ...data}; showToast("💾 Modifiche salvate"); }
 
-  photoInput.value=""; photoPreview.style.display='none'; photoData=null;
+  photoInput.value=""; photoPreview.style.display='none'; photoData=null; photoFile=null; existingPhotoId=null;
   save(); closeEditor(); renderTasks(); renderCalendar();
 });
 
@@ -1746,7 +1783,7 @@ function openDayDrawer(d, cell){
     const list = items.sort((a,b)=> (a.priority-b.priority) || (a.title||"").localeCompare(b.title||""))
       .map(t=>{
         const desc = t.notes ? ` • ${esc(t.notes)}` : "";
-        const hasPhotos = t.photo ? ' • 📷1' : '';
+        const hasPhotos = (t.photo || (t.photos && t.photos.length)) ? ' • 📷1' : '';
         return `<li class="task future" style="list-style:none; margin:8px 0; padding:10px; border-radius:10px; border:1px solid var(--border-color);">
   <div style="display:flex; gap:8px; align-items:center;">
     <div class="head-main" style="flex:1; min-width:0;">
