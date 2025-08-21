@@ -102,10 +102,14 @@ header .top-bar{
   display:flex; align-items:center; gap:10px;
   padding:calc(10px + var(--safe-top)) 12px 10px;
 }
-header h1{font-size:var(--fs-1); margin:0; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-.logo{width:26px;height:26px;border-radius:6px;object-fit:cover;border:1px solid var(--border-color); background:var(--accent-color);}
-.user-pill{display:flex; align-items:center; gap:8px; border:1px solid var(--border-color); padding:6px 10px; border-radius:999px; background:var(--accent-color-2);}
-.avatar{width:20px; height:20px; border-radius:50%; object-fit:cover; background:var(--accent-color-2);}
+header .top-bar .actions{display:flex; gap:10px; margin-left:auto;}
+.logo{width:32px;height:32px;border-radius:6px;object-fit:contain;border:1px solid var(--border-color); background:var(--accent-color);}
+#viewRank,#viewSettings{padding-top:10px;}
+@media(max-width:600px){
+  header .top-bar{flex-direction:column; align-items:center;}
+  header .top-bar .logo{margin-bottom:6px;}
+  header .top-bar .actions{margin-left:0;}
+}
 .nav-tabs{position:relative; display:flex; overflow-x:auto; scroll-snap-type:x mandatory; background:var(--nav-bg); color:var(--nav-fg);}
 .nav-tabs::-webkit-scrollbar{display:none;}
 .nav-tabs::before,.nav-tabs::after{content:""; position:absolute; top:0; bottom:0; width:12px; pointer-events:none;}
@@ -404,17 +408,14 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
 <header id="appHeader">
   <div class="top-bar">
     <img id="appLogo" class="logo" alt="Logo">
-    <h1 id="appTitle">Pulizie di Casa</h1>
-    <button id="toggleFilters" class="icon-btn" aria-label="Filtri">
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 4h18l-7 8v6l-4 2v-8z"/></svg>
-    </button>
-    <button id="addTaskBtn" class="icon-btn" aria-label="Nuova pulizia">
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-    </button>
-    <span class="user-pill" id="userPill">
-      <img id="avatar" class="avatar" alt="">
-      <strong id="who">Utente</strong>
-    </span>
+    <div class="actions">
+      <button id="toggleFilters" class="icon-btn" aria-label="Filtri">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 4h18l-7 8v6l-4 2v-8z"/></svg>
+      </button>
+      <button id="addTaskBtn" class="icon-btn" aria-label="Nuova pulizia">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+    </div>
   </div>
   <nav id="mainNav" class="nav-tabs" role="tablist">
     <button class="nav-tab active" data-tab="tasks" role="tab" aria-selected="true">
@@ -464,7 +465,6 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
 
   <!-- VIEW: CLASSIFICA -->
   <section id="viewRank" class="view">
-    <h2>Classifica</h2>
     <div id="leader" class="leader"></div>
     <details class="history" open>
       <summary>Storico punteggi</summary>
@@ -475,7 +475,6 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
 
   <!-- VIEW: IMPOSTAZIONI -->
   <section id="viewSettings" class="view">
-    <h2>Impostazioni</h2>
     <div id="settingsAccordion" class="accordion">
       <details open>
         <summary>Utente attivo</summary>
@@ -810,7 +809,6 @@ function releaseFocus(){
   if(lastFocused) lastFocused.focus();
 }
 const logoEl=byId("appLogo");
-const avatarEl=byId("avatar"), whoEl=byId("who");
 const addTaskBtn=byId("addTaskBtn");
 const refreshBtn = byId("refreshBtn");
 if(refreshBtn){
@@ -904,10 +902,6 @@ function applyPalette(p){
 
 /* Header, logo */
 function renderHeader(){
-  const u=activeUser();
-  whoEl.textContent=u?.name||"Utente";
-  if(u?.photo){ avatarEl.src=u.photo; avatarEl.style.background="transparent"; }
-  else { avatarEl.removeAttribute("src"); avatarEl.style.background=u?.color||"#ccc"; }
   logoEl.src = state.appearance.logo || "icons/icon-192.png";
   logoEl.style.background="var(--accent-color)";
 }
@@ -1700,10 +1694,10 @@ updateNav(currentTab);
 
 function switchView(tab){
   [viewTasks,viewCalendar,viewRank,viewSettings].forEach(v=>v.classList.remove('active'));
-  if(tab==='tasks'){ viewTasks.classList.add('active'); byId('appTitle').textContent='Pulizie di Casa'; }
-  if(tab==='calendar'){ viewCalendar.classList.add('active'); byId('appTitle').textContent='Calendario Pulizie'; renderCalendar(); }
-  if(tab==='rank'){ viewRank.classList.add('active'); byId('appTitle').textContent='Classifica'; renderLeader(); renderHistory(); }
-  if(tab==='settings'){ viewSettings.classList.add('active'); byId('appTitle').textContent='Impostazioni'; }
+  if(tab==='tasks'){ viewTasks.classList.add('active'); }
+  if(tab==='calendar'){ viewCalendar.classList.add('active'); renderCalendar(); }
+  if(tab==='rank'){ viewRank.classList.add('active'); renderLeader(); renderHistory(); }
+  if(tab==='settings'){ viewSettings.classList.add('active'); }
   currentTab = tab;
   updateNav(tab);
   updateNavOffset();
