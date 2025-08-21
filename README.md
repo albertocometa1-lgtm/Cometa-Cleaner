@@ -22,6 +22,12 @@ window.importBackup(fileOrString); // importa i dati
 window.clearAllData(); // svuota lo storage
 ```
 
+## Foto delle pulizie
+
+Le immagini allegate alle pulizie vengono salvate in uno store dedicato (`attachments`).
+Per ogni foto sono persistiti metadati (id, `cleaningId`, MIME, dimensione e `createdAt`) e un URL base64.
+I task memorizzano solo l'id dell'allegato e l'immagine viene recuperata dallo store quando necessario.
+
 ### Test manuali
 1. Esegui `node scripts/dev-storage-smoke.mjs` per un test di base.
 2. Inserisci dati nell'app, ricarica la pagina: i dati devono persistere.
