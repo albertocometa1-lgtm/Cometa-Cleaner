@@ -22,6 +22,18 @@ window.importBackup(fileOrString); // importa i dati
 window.clearAllData(); // svuota lo storage
 ```
 
+## Backup locale automatico
+
+Il servizio di backup salva periodicamente tutti i dati dell'app in una cartella scelta dall'utente utilizzando la File System Access API (con fallback a OPFS).
+
+Funzioni disponibili nel contesto globale:
+
+```js
+requestBackupDir(); // permette di scegliere/autorizarre la cartella di backup
+importBackupFromDir(); // importa i dati da una cartella precedentemente esportata
+setBackupFrequency(days); // imposta la frequenza dell'export automatico
+```
+
 ## Foto delle pulizie
 
 Le immagini allegate alle pulizie vengono salvate in uno store dedicato (`attachments`).
