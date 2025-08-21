@@ -7,6 +7,9 @@ import {
   importBackup,
   clearAll
 } from "./src/storage/storage.js";
+import { runScheduledBackup, setBackupFrequency } from "./src/services/backupScheduler.ts";
+import { requestBackupDir, getOrRequestDir } from "./src/services/backupStorage.ts";
+import { importFromDirectory } from "./src/services/backupSerializer.ts";
 
 const loaderEl = document.getElementById("loaderOverlay");
 const mainEl = document.querySelector("main");
@@ -53,6 +56,7 @@ await initStorage();
 const persisted = await loadState();
 hideLoader();
 window.appState = persisted || {};
+runScheduledBackup();
 
 function triggerSave(reason) {
   if (!window.appState) return;
@@ -72,6 +76,12 @@ window.addEventListener("beforeunload", () => triggerSave("beforeunload"));
 window.exportBackup = exportBackup;
 window.importBackup = importBackup;
 window.clearAllData = clearAll;
+window.requestBackupDir = requestBackupDir;
+window.importBackupFromDir = async () => {
+  const dir = await getOrRequestDir();
+  if (dir) await importFromDirectory(dir, { merge: false });
+};
+window.setBackupFrequency = setBackupFrequency;
 
 function showUpdateToast() {
   if (document.getElementById("updateToast")) return;
