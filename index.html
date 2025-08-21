@@ -97,18 +97,20 @@ header{
   margin-top:calc(-1 * var(--p-top));
   background:var(--nav-bg);
   box-shadow:var(--shadow);
+  border-bottom:1px solid var(--border-color);
 }
 header .top-bar{
-  display:flex; align-items:center; gap:10px;
+  position:relative;
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
   padding:calc(10px + var(--safe-top)) 12px 10px;
+  min-height:44px;
 }
-header .top-bar .actions{display:flex; gap:10px; margin-left:auto;}
-.logo{width:32px;height:32px;border-radius:6px;object-fit:contain;border:1px solid var(--border-color); background:var(--accent-color);}
+.logo{width:40px;height:40px;border-radius:8px;object-fit:contain;border:1px solid var(--border-color); background:var(--accent-color);position:absolute;left:50%;transform:translate(-50%,-8px);}
 #viewRank,#viewSettings{padding-top:10px;}
-@media(max-width:600px){
-  header .top-bar{flex-direction:column; align-items:center;}
-  header .top-bar .logo{margin-bottom:6px;}
-  header .top-bar .actions{margin-left:0;}
+@media(min-width:768px){
+  header .top-bar{justify-content:flex-end;}
+  #toggleFilters{order:1;}
+  #addTaskBtn{order:2;}
 }
 .nav-tabs{position:relative; display:flex; overflow-x:auto; scroll-snap-type:x mandatory; background:var(--nav-bg); color:var(--nav-fg);}
 .nav-tabs::-webkit-scrollbar{display:none;}
@@ -407,15 +409,13 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
 <div class="app-shell scroll-area">
 <header id="appHeader">
   <div class="top-bar">
+    <button id="toggleFilters" class="icon-btn" aria-label="Filtri">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 4h18l-7 8v6l-4 2v-8z"/></svg>
+    </button>
     <img id="appLogo" class="logo" alt="Logo">
-    <div class="actions">
-      <button id="toggleFilters" class="icon-btn" aria-label="Filtri">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 4h18l-7 8v6l-4 2v-8z"/></svg>
-      </button>
-      <button id="addTaskBtn" class="icon-btn" aria-label="Nuova pulizia">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-      </button>
-    </div>
+    <button id="addTaskBtn" class="icon-btn" aria-label="Nuova pulizia">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
   </div>
   <nav id="mainNav" class="nav-tabs" role="tablist">
     <button class="nav-tab active" data-tab="tasks" role="tab" aria-selected="true">
@@ -1680,6 +1680,14 @@ byId("clearDone").addEventListener("click", ()=>{ state.tasks=state.tasks.filter
 const viewTasks=byId("viewTasks"), viewCalendar=byId("viewCalendar"), viewRank=byId("viewRank"), viewSettings=byId("viewSettings");
 let currentTab="tasks";
 const navTabs=document.querySelectorAll('.nav-tab');
+const headerBtns=[toggleFilters, addTaskBtn];
+
+function updateHeaderButtons(tab){
+  const show = tab === 'tasks';
+  headerBtns.forEach(b=>{ b.style.display = show ? '' : 'none'; });
+}
+
+updateHeaderButtons(currentTab);
 
 function updateNav(tab){
   navTabs.forEach(b=>{
@@ -1700,6 +1708,7 @@ function switchView(tab){
   if(tab==='settings'){ viewSettings.classList.add('active'); }
   currentTab = tab;
   updateNav(tab);
+  updateHeaderButtons(tab);
   updateNavOffset();
   window.scrollTo({top:0,behavior:'smooth'});
 }
