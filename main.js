@@ -10,7 +10,7 @@ import {
 import { runScheduledBackup, setBackupFrequency } from "./src/services/backupScheduler.ts";
 import { requestBackupDir, getOrRequestDir } from "./src/services/backupStorage.ts";
 import { importFromDirectory } from "./src/services/backupSerializer.ts";
-import { initDataBackup } from "./src/views/settings/DataBackup.js";
+import initDataBackup from "./src/views/settings/DataBackup.js";
 
 const loaderEl = document.getElementById("loaderOverlay");
 const mainEl = document.querySelector("main");

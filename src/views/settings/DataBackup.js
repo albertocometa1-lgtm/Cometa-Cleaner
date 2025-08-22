@@ -35,6 +35,7 @@ export async function initDataBackup(){
     if(!isNaN(days)) await (window as any).setBackupFrequency?.(days);
   });
 
+
   const meta = await get('meta','backup') || {};
   if(freqSelect && meta.freqDays) (freqSelect as HTMLSelectElement).value = String(meta.freqDays);
   await refreshLastInfo(meta);
