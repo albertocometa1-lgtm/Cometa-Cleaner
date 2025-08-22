@@ -528,24 +528,12 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
       </details>
       <details>
         <summary>Dati &amp; Backup</summary>
-        <div class="grid-compact" style="margin-top:10px">
-          <button id="exportTasks" class="btn block">Esporta pulizie</button>
-          <label class="file-btn">Importa pulizie
-            <input type="file" id="importTasks" accept="application/json">
-          </label>
-          <button id="exportMyScore" class="btn block">Esporta classifica (utente attivo)</button>
-          <label class="file-btn">Importa classifica su utente attivo
-            <input type="file" id="importMyScore" accept="application/json">
-          </label>
-          <button id="backup" class="btn block">Backup completo</button>
-          <label class="file-btn">Ripristina backup completo
-            <input type="file" id="restoreFile" accept="application/json">
-          </label>
-          <button id="clearDone" class="btn block">Cancella completate</button>
-        </div>
         <div class="grid" style="margin-top:10px">
           <button id="selectBackupDir" class="btn">Seleziona cartella</button>
           <button id="importFromDir" class="btn">Importa da cartella</button>
+          <label class="file-btn">Importa da ZIP
+            <input type="file" id="importFromZip" accept="application/zip">
+          </label>
           <label class="field full">Frequenza backup
             <select id="backupFrequency">
               <option value="1">Ogni giorno</option>
@@ -1625,66 +1613,6 @@ const remindAt=byId("remindAt"), resurface=byId("resurface");
 remindAt.value = state.settings.remindAt||"09:00"; resurface.checked = !!state.settings.resurfaceUnfinished;
 remindAt.addEventListener("change", ()=>{ const v=remindAt.value.trim(); if(/^\d{2}:\d{2}$/.test(v)){ state.settings.remindAt=v; save(); showToast("⏰ Ora promemoria aggiornata"); } else { alert("Usa HH:MM"); remindAt.value=state.settings.remindAt||"09:00"; } });
 resurface.addEventListener("change", ()=>{ state.settings.resurfaceUnfinished=resurface.checked; save(); showToast(resurface.checked?"🧼 Riproponi attivo":"🧼 Riproponi disattivato"); });
-
-/* Export/Import parziali */
-const exportTasksBtn=byId("exportTasks");
-const importTasksInput=byId("importTasks");
-const exportMyScoreBtn=byId("exportMyScore");
-const importMyScoreInput=byId("importMyScore");
-exportTasksBtn.addEventListener("click", ()=>{
-  const payload = JSON.stringify({version: state.version, tasks: state.tasks}, null, 2);
-  const file=new File([payload],"pulizie-tasks-"+todayYMD()+".json",{type:"application/json"});
-  const a=document.createElement("a"); a.href=URL.createObjectURL(file); a.download=file.name; a.click(); URL.revokeObjectURL(a.href);
-  showToast("⬇️ Esportate solo le pulizie");
-});
-importTasksInput.addEventListener("change", async (e)=>{
-  const f=e.target.files[0]; if(!f) return;
-  try{
-    const data=JSON.parse(await f.text());
-    if(Array.isArray(data.tasks)){ state.tasks=data.tasks; save(); renderTasks(); renderCalendar(); showToast("✅ Pulizie importate"); }
-    else alert("File non valido (manca 'tasks').");
-  }catch(err){ alert("Import non riuscito: "+err); }
-  e.target.value="";
-});
-exportMyScoreBtn.addEventListener("click", ()=>{
-  const uid=state.activeUserId, name = (state.users.find(u=>u.id===uid)||{}).name || "utente";
-  const payload = JSON.stringify({userId: uid, userName: name, score: state.score[uid]||0, history: state.history.filter(h=>h.userId===uid)}, null, 2);
-  const file=new File([payload],`classifica-${name.replace(/\s+/g,'_')}.json`,{type:"application/json"});
-  const a=document.createElement("a"); a.href=URL.createObjectURL(file); a.download=file.name; a.click(); URL.revokeObjectURL(a.href);
-  showToast("⬇️ Esportata classifica utente attivo");
-});
-importMyScoreInput.addEventListener("change", async (e)=>{
-  const f=e.target.files[0]; if(!f) return;
-  try{
-    const data=JSON.parse(await f.text());
-    const uid=state.activeUserId;
-    if(typeof data.score==="number"){
-      state.score[uid]=data.score;
-      if(Array.isArray(data.history)){ state.history = state.history.concat(data.history.map(h=>({...h, userId:uid, userName:(state.users.find(u=>u.id===uid)||{}).name||h.userName, reason:(h.reason||"import")+" (import)"}))); }
-      save(); renderLeader(); renderHistory(); showToast("✅ Classifica aggiornata (utente attivo)");
-    }else{
-      alert("File non valido (manca 'score').");
-    }
-  }catch(err){ alert("Import non riuscito: "+err); }
-  e.target.value="";
-});
-
-/* Backup completo */
-byId("backup").addEventListener("click", ()=>{ const payload=JSON.stringify(state,null,2); const file=new File([payload],"pulizie-backup-"+todayYMD()+".json",{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(file); a.download=file.name; a.click(); URL.revokeObjectURL(a.href); showToast("💾 Backup completo creato"); });
-const restoreFile = document.getElementById("restoreFile");
-restoreFile.addEventListener("change", async (e)=>{
-  const f = e.target.files[0];
-  if(!f) return;
-  try{
-    state = migrate(JSON.parse(await f.text()));
-    save(); boot(); showToast("🧰 Ripristino completo");
-  }catch(err){
-    alert("Ripristino non riuscito: " + err);
-  }finally{
-    e.target.value = "";
-  }
-});
-byId("clearDone").addEventListener("click", ()=>{ state.tasks=state.tasks.filter(t=>!t.done); save(); renderTasks(); renderCalendar(); showToast("🧹 Completate cancellate"); });
 
 /* ===== Navigazione Menù ===== */
 const viewTasks=byId("viewTasks"), viewCalendar=byId("viewCalendar"), viewRank=byId("viewRank"), viewSettings=byId("viewSettings");
