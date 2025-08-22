@@ -79,7 +79,9 @@ window.clearAllData = clearAll;
 window.requestBackupDir = requestBackupDir;
 window.importBackupFromDir = async () => {
   const dir = await getOrRequestDir();
-  if (dir) await importFromDirectory(dir, { merge: false });
+  if (!dir) return;
+  const merge = confirm('Unire il backup ai dati esistenti?\nOK per unire, Annulla per sovrascrivere.');
+  await importFromDirectory(dir, { merge });
 };
 window.setBackupFrequency = setBackupFrequency;
 

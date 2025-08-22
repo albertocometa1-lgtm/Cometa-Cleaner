@@ -23,6 +23,7 @@ let dirty = false;
 let saveTimer = null;
 let lastSave = 0;
 let pendingState = {};
+let maintenanceMode = false;
 
 function openDB() {
   if (!hasIndexedDB) return Promise.resolve(null);
@@ -131,6 +132,7 @@ function doSave(state) {
 }
 
 export function saveState(partialState, { reason } = {}) {
+  if (maintenanceMode) return;
   Object.assign(pendingState, partialState);
   dirty = true;
   if (saveTimer) clearTimeout(saveTimer);
@@ -180,3 +182,6 @@ export async function clearAll() {
 }
 
 export { openDB };
+export function setMaintenanceMode(flag){
+  maintenanceMode = flag;
+}

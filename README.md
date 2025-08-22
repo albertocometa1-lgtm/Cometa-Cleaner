@@ -30,7 +30,7 @@ Funzioni disponibili nel contesto globale:
 
 ```js
 requestBackupDir(); // permette di scegliere/autorizarre la cartella di backup
-importBackupFromDir(); // importa i dati da una cartella precedentemente esportata
+importBackupFromDir(); // importa i dati da una cartella precedentemente esportata (merge o sovrascrivi)
 setBackupFrequency(days); // imposta la frequenza dell'export automatico
 ```
 
