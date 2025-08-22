@@ -308,6 +308,7 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
 }
 .file-btn input[type="file"]{ display:none; }
 .small-note{ font-size:12px; opacity:.7; margin-top:8px; }
+#lastBackupInfo{ font-size:12px; opacity:.7; margin-top:8px; }
 
 /* Toast */
 .toast-wrap{
@@ -541,6 +542,18 @@ input::placeholder, textarea::placeholder{ color:var(--placeholder-color); }
             <input type="file" id="restoreFile" accept="application/json">
           </label>
           <button id="clearDone" class="btn block">Cancella completate</button>
+        </div>
+        <div class="grid" style="margin-top:10px">
+          <button id="selectBackupDir" class="btn">Seleziona cartella</button>
+          <button id="importFromDir" class="btn">Importa da cartella</button>
+          <label class="field full">Frequenza backup
+            <select id="backupFrequency">
+              <option value="1">Ogni giorno</option>
+              <option value="7">Ogni settimana</option>
+              <option value="30">Ogni mese</option>
+            </select>
+          </label>
+          <div id="lastBackupInfo" class="full">Ultimo backup: mai</div>
         </div>
       </details>
       <details>
