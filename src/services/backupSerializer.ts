@@ -1,4 +1,4 @@
-import { loadState, upsert, clearAll } from '../storage/storage.js';
+import { loadState, upsert, clearAll, setMaintenanceMode } from '../storage/storage.js';
 import { sha256 } from '../utils/checksum.ts';
 
 export interface ManifestEntry{ path:string; hash:string; }
@@ -23,20 +23,28 @@ export async function exportToDirectory(dir: FileSystemDirectoryHandle){
   return manifest;
 }
 
-async function readJSON(file: File){
-  const text = await file.text();
-  return JSON.parse(text);
-}
-
 export async function importFromDirectory(dir: FileSystemDirectoryHandle, { merge = false } = {}){
-  const manifestFile = await dir.getFileHandle('backup-manifest.json').then(h=>h.getFile());
-  const manifest: BackupManifest = await readJSON(manifestFile);
-  if(!merge) await clearAll();
-  for(const entry of manifest.files){
-    const fh = await dir.getFileHandle(entry.path).then(h=>h.getFile());
-    const data = await readJSON(fh);
-    if(Array.isArray(data)){
-      for(const rec of data){ await upsert(entry.path.replace('.json',''), rec); }
+  setMaintenanceMode(true);
+  try{
+    const manifestFile = await dir.getFileHandle('backup-manifest.json').then(h=>h.getFile());
+    const manifestText = await manifestFile.text();
+    const manifest: BackupManifest = JSON.parse(manifestText);
+    if(manifest.version !== 1) throw new Error(`Unsupported manifest version ${manifest.version}`);
+    const fileData = new Map<string, any>();
+    for(const entry of manifest.files){
+      const fh = await dir.getFileHandle(entry.path).then(h=>h.getFile());
+      const text = await fh.text();
+      const hash = await sha256(text);
+      if(hash !== entry.hash) throw new Error(`Hash mismatch for ${entry.path}`);
+      fileData.set(entry.path, JSON.parse(text));
     }
+    if(!merge) await clearAll();
+    for(const [path, data] of fileData){
+      if(Array.isArray(data)){
+        for(const rec of data){ await upsert(path.replace('.json',''), rec); }
+      }
+    }
+  }finally{
+    setMaintenanceMode(false);
   }
 }
