@@ -1,5 +1,7 @@
 import { SCHEMA_VERSION, STORES } from './schema.js';
 import { migrate } from './migrations.js';
+import { sha256 } from '../utils/checksum.ts';
+import { getJSZip, makeBackupFilename } from '../utils/zip.js';
 
 const DB_NAME = 'cometa-cleaner';
 const hasIndexedDB = typeof indexedDB !== 'undefined';
@@ -146,21 +148,49 @@ export function saveState(partialState, { reason } = {}) {
 }
 
 export async function exportBackup() {
-  const data = await loadState();
-  return new Blob([JSON.stringify(data)], { type: 'application/json' });
+  const JSZip = await getJSZip();
+  const state = await loadState();
+  const manifest = { version: 1, generatedAt: new Date().toISOString(), files: [] };
+  const zip = new JSZip();
+  for (const [name, records] of Object.entries(state)) {
+    const text = JSON.stringify(records);
+    zip.file(`${name}.json`, text);
+    const hash = await sha256(text);
+    manifest.files.push({ path: `${name}.json`, hash });
+  }
+  zip.file('backup-manifest.json', JSON.stringify(manifest, null, 2));
+  const blob = await zip.generateAsync({ type: 'blob' });
+  const filename = makeBackupFilename('backup');
+  if (typeof File !== 'undefined') {
+    return new File([blob], filename, { type: 'application/zip' });
+  }
+  blob.name = filename;
+  return blob;
 }
 
 export async function importBackup(input) {
-  let text;
-  if (input instanceof Blob) text = await input.text();
-  else if (typeof input === 'string') text = input;
-  else text = JSON.stringify(input);
-  const data = JSON.parse(text);
-  for (const name of Object.keys(data)) {
-    const arr = data[name];
-    if (Array.isArray(arr)) {
-      for (const rec of arr) {
-        await upsert(name, rec);
+  let source;
+  if (input instanceof Blob) {
+    source = await input.arrayBuffer();
+  } else if (input instanceof ArrayBuffer) {
+    source = input;
+  } else if (typeof input === 'string') {
+    source = new TextEncoder().encode(input);
+  } else {
+    source = new TextEncoder().encode(JSON.stringify(input));
+  }
+  const JSZip = await getJSZip();
+  const zip = await JSZip.loadAsync(source);
+  const manifestText = await zip.file('backup-manifest.json').async('string');
+  const manifest = JSON.parse(manifestText);
+  for (const entry of manifest.files) {
+    const file = zip.file(entry.path);
+    if (!file) continue;
+    const text = await file.async('string');
+    const data = JSON.parse(text);
+    if (Array.isArray(data)) {
+      for (const rec of data) {
+        await upsert(entry.path.replace('.json', ''), rec);
       }
     }
   }

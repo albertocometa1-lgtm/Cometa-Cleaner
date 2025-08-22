@@ -24,7 +24,7 @@ async function run(){
   const backup = await exportBackup();
   console.log('backup', backup.size);
   await clearAll();
-  await importBackup(await backup.text());
+  await importBackup(backup);
   console.log('restored', await get('settings','app'));
 }
 
