@@ -1,3 +1,5 @@
+import { isNativePlatform } from './nativeBackup.ts';
+
 const DB_NAME = 'backup-storage';
 const STORE_NAME = 'handles';
 let dbPromise: Promise<IDBDatabase> | null = null;
@@ -33,6 +35,10 @@ async function loadHandle(): Promise<FileSystemDirectoryHandle|null>{
 }
 
 export async function requestBackupDir(){
+  if(isNativePlatform()){
+    alert('Su iOS i backup automatici vengono salvati nei Documenti dell’app. Non è necessario scegliere una cartella.');
+    return null;
+  }
   if(!('showDirectoryPicker' in window)){
     const opfs = await navigator.storage.getDirectory();
     await saveHandle(opfs as unknown as FileSystemDirectoryHandle);
@@ -48,6 +54,7 @@ export async function requestBackupDir(){
 }
 
 export async function ensurePermissions(){
+  if(isNativePlatform()) return null;
   let handle = await loadHandle();
   if(!handle) return null;
   const perm = await (handle as any).queryPermission?.({mode:'readwrite'});

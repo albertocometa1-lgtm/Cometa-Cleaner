@@ -1,4 +1,5 @@
 // storage & offline bootstrap
+import '../global.css';
 import {
   initStorage,
   loadState,
@@ -6,11 +7,15 @@ import {
   exportBackup,
   importBackup,
   clearAll
-} from "./src/storage/storage.js";
-import { runScheduledBackup, setBackupFrequency } from "./src/services/backupScheduler.ts";
-import { requestBackupDir, getOrRequestDir } from "./src/services/backupStorage.ts";
-import { importFromDirectory } from "./src/services/backupSerializer.ts";
-import initDataBackup from "./src/views/settings/DataBackup.js";
+} from "./storage/storage.js";
+import { runScheduledBackup, setBackupFrequency } from "./services/backupScheduler.ts";
+import { requestBackupDir, getOrRequestDir } from "./services/backupStorage.ts";
+import { importFromDirectory } from "./services/backupSerializer.ts";
+import { initDataBackup } from "./views/settings/DataBackup.js";
+import { isNativePlatform, restoreLatestNativeBackup, saveNativeBackup } from "./services/nativeBackup.ts";
+
+const BUILD_HASH = typeof __BUILD_HASH__ !== "undefined" ? __BUILD_HASH__ : "dev";
+const nativeContext = isNativePlatform();
 
 const loaderEl = document.getElementById("loaderOverlay");
 const mainEl = document.querySelector("main");
@@ -49,8 +54,6 @@ window.fetch = async (...args) => {
   }
 };
 
-const BUILD_HASH = "1";
-
 showLoader();
 // boot persistence layer before registering service worker
 await initStorage();
@@ -78,13 +81,24 @@ window.addEventListener("beforeunload", () => triggerSave("beforeunload"));
 window.exportBackup = exportBackup;
 window.importBackup = importBackup;
 window.clearAllData = clearAll;
-window.requestBackupDir = requestBackupDir;
+window.requestBackupDir = async () => {
+  if (nativeContext) {
+    alert('I backup automatici vengono salvati nella cartella Documenti dell’app.');
+    return null;
+  }
+  return requestBackupDir();
+};
 window.importBackupFromDir = async () => {
+  if (nativeContext) {
+    await restoreLatestNativeBackup();
+    return;
+  }
   const dir = await getOrRequestDir();
   if (!dir) return;
   const merge = confirm('Unire il backup ai dati esistenti?\nOK per unire, Annulla per sovrascrivere.');
   await importFromDirectory(dir, { merge });
 };
+window.saveNativeBackupNow = saveNativeBackup;
 window.setBackupFrequency = setBackupFrequency;
 
 function showUpdateToast() {

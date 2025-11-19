@@ -1,0 +1,6 @@
+node_modules
+.dist
+/dist
+ios/App/App/public
+.DS_Store
+*.log
