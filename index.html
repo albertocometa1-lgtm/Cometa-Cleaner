@@ -972,9 +972,10 @@ function statusForTask(t){
   const start=parseLocal(t.startAt);
   if(!start) return { next:null, code: t.done?"done":"future" };
   const next=t.repeat?.enabled ? nextOccurrenceFromStart(start, t.repeat.every, t.repeat.unit, now, t.repeat.weekdays||[]) : start;
+  const occursToday = occursOnDay(t, now);
   if(t.done) return { next, code:"done" };
   if(!next) return { next:null, code:"future" };
-  if(isSameDay(next, now)) return { next, code:"due" };
+  if(occursToday) return { next, code:"due" };
   if(next < now) return { next, code:"over" };
   return { next, code:"future" };
 }
