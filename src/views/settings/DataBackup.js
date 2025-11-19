@@ -1,51 +1,76 @@
 import { ensurePermissions } from '../../services/backupStorage.ts';
 import { get } from '../../storage/storage.js';
+import { getNativeBackupStats, isNativePlatform, restoreLatestNativeBackup } from '../../services/nativeBackup.ts';
 
 const freqSelect = document.getElementById('backupFrequency');
 const lastEl = document.getElementById('lastBackupInfo');
 const importDirBtn = document.getElementById('importFromDir');
 const selectDirBtn = document.getElementById('selectBackupDir');
 const importZipInput = document.getElementById('importFromZip');
+const nativeContext = isNativePlatform();
 
 export async function initDataBackup(){
   importDirBtn?.addEventListener('click', async()=>{
     try{
-      await (window as any).importBackupFromDir?.();
+      if(nativeContext){
+        await restoreLatestNativeBackup();
+      }else{
+        await window.importBackupFromDir?.();
+      }
       await refreshLastInfo();
     }catch(err){ console.error('import failed', err); }
   });
 
   selectDirBtn?.addEventListener('click', async()=>{
-    try{ await (window as any).requestBackupDir?.(); await refreshLastInfo(); }
+    if(nativeContext){
+      alert('I backup automatici vengono salvati nella cartella Documenti dell’app. Puoi recuperarli dalla vista “File” di iOS.');
+      return;
+    }
+    try{ await window.requestBackupDir?.(); await refreshLastInfo(); }
     catch(err){ console.error('select dir failed', err); }
   });
 
   importZipInput?.addEventListener('change', async (e)=>{
-    const file = (e.target as HTMLInputElement).files?.[0];
+    const input = e.target;
+    if(!(input instanceof HTMLInputElement)) return;
+    const file = input.files?.[0];
     if(!file) return;
     try{
-      await (window as any).importBackup?.(file);
+      await window.importBackup?.(file);
       await refreshLastInfo();
     }catch(err){ console.error('zip import failed', err); }
-    (e.target as HTMLInputElement).value = '';
+    input.value = '';
   });
 
   freqSelect?.addEventListener('change', async()=>{
-    const days = parseInt((freqSelect as HTMLSelectElement).value,10);
-    if(!isNaN(days)) await (window as any).setBackupFrequency?.(days);
+    if(!(freqSelect instanceof HTMLSelectElement)) return;
+    const days = parseInt(freqSelect.value,10);
+    if(!isNaN(days)) await window.setBackupFrequency?.(days);
   });
 
 
   const meta = await get('meta','backup') || {};
-  if(freqSelect && meta.freqDays) (freqSelect as HTMLSelectElement).value = String(meta.freqDays);
+  if(nativeContext){
+    selectDirBtn?.setAttribute('data-native-mode','true');
+    if(importDirBtn) importDirBtn.textContent = 'Ripristina ultimo backup locale';
+  }
+
+  if(freqSelect instanceof HTMLSelectElement && meta.freqDays){
+    freqSelect.value = String(meta.freqDays);
+  }
   await refreshLastInfo(meta);
 }
 
-async function refreshLastInfo(meta?: any){
+async function refreshLastInfo(meta){
   if(!lastEl) return;
   meta = meta || await get('meta','backup') || {};
   let text = 'Ultimo backup: mai';
-  if(meta.lastBackupAt){
+  if(nativeContext){
+    const stats = await getNativeBackupStats();
+    if(stats.lastBackupAt){
+      text = `Ultimo backup iOS: ${new Date(stats.lastBackupAt).toLocaleString()} (${formatBytes(stats.totalBytes)})`;
+    }
+  }else if(meta.lastBackupAt){
     let sizeStr = '';
     try{
       const dir = await ensurePermissions();
@@ -59,9 +84,9 @@ async function refreshLastInfo(meta?: any){
   lastEl.textContent = text;
 }
 
-async function dirSize(dir: any): Promise<number>{
+async function dirSize(dir){
   let total = 0;
-  for await (const [, handle] of (dir as any).entries()){
+  for await (const [, handle] of dir.entries()){
     if(handle.kind === 'file'){
       const f = await handle.getFile();
       total += f.size;
@@ -72,7 +97,7 @@ async function dirSize(dir: any): Promise<number>{
   return total;
 }
 
-function formatBytes(bytes:number){
+function formatBytes(bytes){
   if(bytes >= 1048576) return (bytes/1048576).toFixed(1) + ' MB';
   if(bytes >= 1024) return (bytes/1024).toFixed(1) + ' KB';
   return bytes + ' B';

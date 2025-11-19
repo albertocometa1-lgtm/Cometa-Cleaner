@@ -1,10 +1,9 @@
-const BUILD_HASH = "1";
+const BUILD_HASH = "__BUILD_HASH__";
 const CACHE_NAME = `app-cache-v${BUILD_HASH}`;
 const ASSETS = [
   "./",
   "./index.html",
   `./manifest.json?v=${BUILD_HASH}`,
-  `./main.js?v=${BUILD_HASH}`,
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/icon-maskable-512.png",

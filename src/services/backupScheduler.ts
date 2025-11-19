@@ -1,6 +1,7 @@
 import { ensurePermissions } from './backupStorage.ts';
 import { exportToDirectory } from './backupSerializer.ts';
 import { get, upsert } from '../storage/storage.js';
+import { isNativePlatform, saveNativeBackup } from './nativeBackup.ts';
 
 const DEFAULT_FREQ_DAYS = 7;
 let schedulerInit = false;
@@ -51,9 +52,20 @@ export async function runScheduledBackup() {
   }
 
   const last = meta.lastBackupAt || 0;
+  const now = Date.now();
+  if (isNativePlatform()) {
+    if (now - last < freq * 86400000) return;
+    try {
+      await saveNativeBackup();
+      await upsert('meta', { id: 'backup', lastBackupAt: now, freqDays: freq });
+    } catch (err) {
+      console.error('auto backup failed (native)', err);
+    }
+    return;
+  }
+
   const dir = await ensurePermissions();
   if (!dir) return; // no dir yet
-  const now = Date.now();
   if (now - last < freq * 86400000) return;
   try {
     await exportToDirectory(dir);

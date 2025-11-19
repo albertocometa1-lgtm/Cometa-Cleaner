@@ -1,0 +1,31 @@
+{
+  "name": "cometa-cleaner",
+  "version": "1.0.0",
+  "description": "Cometa Cleaner PWA impacchettata con Vite e Capacitor per la pubblicazione sugli store.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && node scripts/postbuild.mjs",
+    "preview": "vite preview",
+    "sync:ios": "cap sync ios",
+    "open:ios": "cap open ios"
+  },
+  "keywords": [
+    "pwa",
+    "capacitor",
+    "vite"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@capacitor/cli": "^7.1.0",
+    "typescript": "^5.9.3",
+    "vite": "^5.1.0"
+  },
+  "dependencies": {
+    "@capacitor/core": "^7.1.0",
+    "@capacitor/filesystem": "^7.1.4",
+    "@capacitor/ios": "^7.1.0"
+  }
+}

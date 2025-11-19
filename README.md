@@ -2,6 +2,30 @@
 
 App di esempio per la gestione delle pulizie domestiche in modalità PWA.
 
+## Toolchain & build
+
+Il progetto utilizza [Vite](https://vitejs.dev/) per l'impacchettamento della web app e [Capacitor 7](https://capacitorjs.com/) per generare il contenitore nativo iOS pronto per l'App Store.
+
+```bash
+npm install
+npm run dev        # sviluppo PWA
+npm run build      # bundle production + metadati build
+npm run sync:ios   # copia degli asset dentro il progetto Xcode
+npm run open:ios   # apre Xcode (richiede macOS)
+```
+
+La cartella `dist/` viene popolata da `npm run build` e quindi sincronizzata in `ios/App/App/public` tramite Capacitor. Il file `scripts/postbuild.mjs` allinea il valore `BUILD_HASH` usato dal service worker e genera `dist/build-meta.json`, utile per automatizzare versioni e release.
+
+## Asset binari da aggiungere a mano
+
+Per ridurre il peso della repo non vengono tracciati gli asset PNG (icone PWA, icone native e splash screen). Prima di eseguire una build destinata allo store:
+
+1. Crea le cartelle indicate in `BINARY_ASSETS.md` (esistono già `public/icons/` e `ios/App/App/Assets.xcassets/…`).
+2. Esporta i file elencati nella tabella con le dimensioni richieste.
+3. Copia i PNG nei percorsi suggeriti e riesegui `npm run build && npm run sync:ios`.
+
+Trovi il dettaglio completo (percorso, risoluzione, scopo) nel file [`BINARY_ASSETS.md`](./BINARY_ASSETS.md).
+
 ## Offline-first & Backup
 
 La persistenza locale è gestita tramite IndexedDB con fallback a localStorage.
@@ -25,15 +49,21 @@ window.clearAllData(); // svuota lo storage
 
 ## Backup locale automatico
 
-Il servizio di backup salva periodicamente tutti i dati dell'app in una cartella scelta dall'utente utilizzando la File System Access API (con fallback a OPFS).
+Il servizio di backup salva periodicamente tutti i dati dell'app:
 
-Funzioni disponibili nel contesto globale:
+* **Web / desktop:** l'utente autorizza una cartella tramite File System Access API (con fallback a OPFS). I backup vengono esportati come struttura di file leggibile.
+* **App iOS (Capacitor):** quando l'app gira in una WebView nativa non viene mostrato il picker di cartelle (non supportato). I backup vengono invece serializzati come ZIP (riutilizzando lo stesso formato dell'esportazione manuale) e scritti automaticamente nella cartella `CometaCleaner/Backups` all'interno dei Documenti dell'app, accessibile dall'app File di iOS o da Finder.
+
+Funzioni globali esposte nel browser:
 
 ```js
-requestBackupDir(); // permette di scegliere/autorizarre la cartella di backup
-importBackupFromDir(); // importa i dati da una cartella precedentemente esportata (merge o sovrascrivi)
-setBackupFrequency(days); // imposta la frequenza dell'export automatico
+requestBackupDir();      // abilita la cartella di backup (solo Web)
+importBackupFromDir();   // importa una struttura esportata precedentemente
+setBackupFrequency(days);// aggiorna la frequenza schedulata
+saveNativeBackupNow();   // forza la creazione di uno ZIP locale su iOS
 ```
+
+I dispositivi iOS possono ripristinare l'ultimo ZIP salvato direttamente dall'app (impostazioni → Ripristina ultimo backup locale) grazie al bridge con `@capacitor/filesystem`.
 
 ## Foto delle pulizie
 
